@@ -4,11 +4,11 @@ BookBridge is a comprehensive, web-based Library Management System developed as 
 
 The primary goal of this project is to provide a user-friendly digital platform for managing books, tracking issues and returns, and handling fines in a modern, automated way.
 
-## ✨ Core Features
+## Core Features
 
 This system is divided into two main panels with role-specific features:
 
-### 👤 Librarian Panel
+### Librarian Panel
 - **Dashboard:** An overview of key library statistics.
 - **Book Management:** Add, update, and manage the complete book catalog.
 - **Issue & Return Management:** A streamlined process to issue books to students and mark them as returned.
@@ -16,7 +16,7 @@ This system is divided into two main panels with role-specific features:
 - **User Management:** Manage student and faculty accounts.
 - **Reporting:** View reports on issued books, fines, and payments.
 
-### 👩‍🎓 Student Panel
+### Student Panel
 - **Dashboard:** A personalized dashboard for students.
 - **Book Catalog:** Browse and search for available books in the library.
 - **My Returns:** Track currently borrowed books and view their due dates.
@@ -25,7 +25,7 @@ This system is divided into two main panels with role-specific features:
     - **💳 Online Payment:** Pay fines instantly and securely using the integrated **PayFast** payment gateway.
     - **📄 Bank Challan:** Generate and download a PDF bank challan to pay the fine manually at the designated bank branch.
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **Backend:** PHP
 - **Database:** MySQL
@@ -34,7 +34,7 @@ This system is divided into two main panels with role-specific features:
 - **PDF Generation:** Dompdf library
 - **Development Environment:** XAMPP Server
 
-## 🚀 How to Set Up and Run This Project
+## How to Set Up and Run This Project
 
 To set up and run this project on your local machine, follow these steps:
 
@@ -69,9 +69,3 @@ To set up and run this project on your local machine, follow these steps:
 
 6.  **Run the Project:**
     -   You are all set! Open your browser and navigate to `http://localhost/your-project-folder-name/` to see the project live.
-
-## 👥 Group Members
-
--   **Hira Malik**
--   [Name of 2nd Group Member]
--   [Name of 3rd Group Member]
