@@ -22,8 +22,8 @@ This system is divided into two main panels with role-specific features:
 - **My Returns:** Track currently borrowed books and view their due dates.
 - **Fine Management:** View any pending or paid fines.
 - **Dual Payment System:**
-    - **💳 Online Payment:** Pay fines instantly and securely using the integrated **PayFast** payment gateway.
-    - **📄 Bank Challan:** Generate and download a PDF bank challan to pay the fine manually at the designated bank branch.
+    - **Online Payment:** Pay fines instantly and securely using the integrated **PayFast** payment gateway.
+    - **Bank Challan:** Generate and download a PDF bank challan to pay the fine manually at the designated bank branch.
 
 ## Technologies Used
 
