@@ -2,7 +2,7 @@
 include_once '../includes/config.php';
 include_once '../includes/functions.php';
 
-// Start session if not already started
+// Start session if not alredy started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -1292,3 +1292,4 @@ while ($row = $result->fetch_assoc()) {
     </script>
 </body>
 </html>
+
