@@ -1,23 +1,16 @@
 <?php
 include_once '../includes/header.php';
 checkUserRole('librarian');
-
-// Process user operations
 $message = '';
 $messageType = '';
-
-
-// Handle search and filtering
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $role = isset($_GET['role']) ? trim($_GET['role']) : '';
-
-// Build the query
 $sql = "SELECT * FROM users WHERE 1=1";
 $params = [];
 $types = "";
 
 if (!empty($search)) {
-    $sql .= " AND (name LIKE ? OR email LIKE ? OR unique_id LIKE ? OR department LIKE ?)";
+    $sql .= " AND (name LIKE ? OR email LIKE ? OR unique_id LIKE ? OR class LIKE ?)";
     $searchParam = "%$search%";
     $params[] = $searchParam;
     $params[] = $searchParam;
@@ -33,8 +26,6 @@ if (!empty($role)) {
 }
 
 $sql .= " ORDER BY name";
-
-// Prepare and execute the query
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -85,7 +76,7 @@ while ($row = $result->fetch_assoc()) {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th>Department</th>
+                <th>class</th>
                 <th>Phone</th>
                 <th>Registered On</th>
                 <th>Actions</th>
@@ -117,7 +108,7 @@ while ($row = $result->fetch_assoc()) {
                             }
                             ?>
                         </td>
-                        <td><?php echo htmlspecialchars($user['department']); ?></td>
+                        <td><?php echo htmlspecialchars($user['class']); ?></td>
                         <td><?php echo htmlspecialchars($user['phone']); ?></td>
                         <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
                         <td>
@@ -137,6 +128,5 @@ while ($row = $result->fetch_assoc()) {
     </table>
 </div>
 <?php
-// Include footer
 include_once '../includes/footer.php';
 ?>
