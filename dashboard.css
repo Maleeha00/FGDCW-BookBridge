@@ -1,4 +1,4 @@
-/* Dashboard Styles for  FGDCW Bookbridge  */
+
 
 .top-navbar {
     position: fixed;
@@ -74,7 +74,7 @@
     white-space: nowrap;
 }
 
-/* Common Button Style */
+
 .profile-btn,
 .logout-btn {
     color: var(--white);
@@ -83,31 +83,31 @@
     border-radius: var(--border-radius);
 }
 
-/* Profile Button */
+
 .profile-btn {
     background: var(--primary-color);
 }
 
 .profile-btn:hover {
-    background: var(--primary-light); /* Softer hover */
+    background: var(--primary-light); 
 }
 
-/* Logout Button */
+
 .logout-btn {
     background: var(--accent-color);
 }
 
 .logout-btn:hover {
-    background: var(--primary-light); /* Soft hover instead of dark */
+    background: var(--primary-light); 
 }
 
 
 
-/* Layout */
+
 .dashboard-container {
     display: flex;
     min-height: 100vh;
-    margin-top: 70px; /* Account for fixed navbar */
+    margin-top: 70px; 
 }
 
 .sidebar {
@@ -450,7 +450,7 @@
     font-weight: 500;
 }
 
-/* Dashboard Content Blocks */
+
 .dashboard-row {
     display: flex;
     flex-wrap: wrap;
@@ -464,7 +464,7 @@
     margin-bottom: 20px;
 }
 
-/* Notification dropdown */
+
 .notification-dropdown {
     position: relative;
 }
@@ -624,7 +624,7 @@
     gap: 5px;
 }
 
-/* Modal */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -697,7 +697,7 @@
     margin-left: 10px;
 }
 
-/* Pagination */
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -726,7 +726,7 @@
     color: var(--white);
 }
 
-/* Enhanced Activity Scroll */
+
 .activity-scroll-container {
     max-height: 400px;
     overflow-y: auto;
@@ -793,7 +793,7 @@
     color: var(--text-light);
 }
 
-/* Empty State */
+
 .empty-state {
     text-align: center;
     padding: 40px 20px;
@@ -805,14 +805,14 @@
     opacity: 0.5;
 }
 
-/* Badge Container */
+
 .badge-container {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-/* Responsive */
+
 @media (max-width: 992px) {
     .sidebar {
         width: 60px;
@@ -875,7 +875,7 @@
     }
 }
 
-/* Animation for modals and dropdowns */
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -887,7 +887,7 @@
     }
 }
 
-/* Loading animation */
+
 .loader {
     display: inline-block;
     width: 30px;
