@@ -1,7 +1,6 @@
 <?php
 include_once '../includes/config.php';
 
-// Check agar URL se semester aur type aaye hain
 $type = isset($_GET['type']) ? $_GET['type'] : null;
 $category = isset($_GET['category']) ? $_GET['category'] : null;
 
@@ -11,7 +10,7 @@ if ($type && $category) {
    $stmt->execute();
    $result = $stmt->get_result();
 } else {
-   // agar koi filter na mile toh sab data dikhao (ya blank rakho, jo tum chaho)
+  
    $result = $conn->query("SELECT * FROM ebooks");
 }
 if (session_status() == PHP_SESSION_NONE) {
@@ -57,7 +56,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Catalog </title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="icon" type="image/svg+xml" href="../uploads/assests/book.png">
+    <link rel="icon" type="image/png" href="../uploads/assests/book.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -232,10 +231,9 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                     </div>
                     <div class="door-handle"></div>
                 </div>
-
                 <?php foreach ($categories as $category): 
                     $catName = $category['category'];
-                    // Default icon if a category from the database is not in our list
+                    
                     $icon = isset($categoryIcons[$catName]) ? $categoryIcons[$catName] : "fas fa-book";
                 ?>
                 <div class="category-door" onclick="window.location.href='category_books.php?category=<?php echo urlencode($catName); ?>'">
@@ -259,7 +257,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
 
     <div class="almirah-container">
 
-        <!-- IT -->
+      
         <div class="almirah">
             <h2 style="color: #ffffffff;">BS Information Technology</h2>
             <div class="sem-grid">
@@ -289,7 +287,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                 <p><a href="ebooks.php?type=pastpapers&category=BS IT-3">Past Papers</a></p>
               </div>
             </div>
-                <!-- Semester 4 -->
+                
             <div class="sem-box">
               <i class="fas fa-network-wired"></i><h3>Semester 4</h3>
               <div class="sub-links">
@@ -332,7 +330,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                 </div>
             </div>
         </div>
-        <!-- HPE -->
+        
         <div class="almirah">
             <h2 style="color: #ffffffff;">BS Health and Physical Education</h2>
             <div class="sem-grid">
@@ -402,7 +400,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                 </div>
             </div>
         </div>
-        <!-- ENGLISH -->
+       
         <div class="almirah">
             <h2 style="color: #ffffffff;">BS English</h2>
             <div class="sem-grid">
@@ -472,7 +470,7 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                 </div>
             </div>
         </div>
-        <!-- Intermediate -->
+        
         <div class="almirah">
             <h2 style="color: #ffffffff;">Intermediate</h2>
             <div class="sem-grid">
@@ -480,7 +478,6 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                     <i class="fas fa-pencil-alt"></i><h3>1 year</h3>
                     <div class="sub-links">
                         <p><a href="ebooks.php?type=ebooks&category=1st Year Pre Engineering">Ebooks</a></p>
-                        <p><a href="ebooks.php?type=outlines&category=1st Year Pre Engineering">Outlines</a></p>
                         <p><a href="ebooks.php?type=pastpapers&category=1st Year Pre Engineering">Past Papers</a></p>
                     </div>
                 </div>
@@ -488,7 +485,6 @@ $totalBooks = $totalBooksResult->fetch_assoc()['total'];
                     <i class="fas fa-calculator"></i><h3>2nd year</h3>
                     <div class="sub-links">
                         <p><a href="ebooks.php?type=ebooks&category=2nd Year Pre Engineering">Ebooks</a></p>
-                        <p><a href="ebooks.php?type=outlines&category=2nd Year Pre Engineering">Outlines</a></p>
                         <p><a href="ebooks.php?type=pastpapers&category=2nd Year Pre Engineering">Past Papers</a></p>
                     </div>
                 </div>
