@@ -1,15 +1,9 @@
 <?php
-// Include header
 include_once '../includes/header.php';
-
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Process book operations
 $message = '';
 $messageType = '';
 
-// Add new book
 if (isset($_POST['add_book'])) {
     $book_name = trim($_POST['book_name']);
     $author = trim($_POST['author']);
@@ -18,12 +12,12 @@ if (isset($_POST['add_book'])) {
     $category = trim($_POST['category']);
     $quantity = (int)$_POST['quantity'];
     
-    // Basic validation
+   
     if (empty($book_name) || empty($author) || empty($quantity)) {
         $message = "book_name, author, and quantity are required fields.";
         $messageType = "danger";
     } else {
-        // Check if book_no already exists
+        
         if (!empty($book_no)) {
             $stmt = $conn->prepare("SELECT id FROM books WHERE book_no = ?");
             $stmt->bind_param("s", $book_no);
@@ -37,7 +31,6 @@ if (isset($_POST['add_book'])) {
         }
         
         if (empty($message)) {
-            // Insert book
             $stmt = $conn->prepare("
                 INSERT INTO books (book_name, author, book_no, publisher, category, 
                                   total_quantity, available_quantity)
@@ -61,7 +54,7 @@ if (isset($_POST['add_book'])) {
     }
 }
 
-// Get all categories for filter
+
 $categories = [];
 $result = $conn->query("SELECT DISTINCT category FROM books WHERE category != '' ORDER BY category");
 if ($result) {
@@ -70,16 +63,16 @@ if ($result) {
     }
 }
 
-// Handle search and filtering
+
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 
-// Pagination settings
+
 $booksPerPage = 12;
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $booksPerPage;
 
-// Build the query
+
 $sql = "SELECT * FROM books WHERE 1=1";
 $params = [];
 $types = "";
@@ -99,7 +92,7 @@ if (!empty($category)) {
     $types .= "s";
 }
 
-// Get total count
+
 $countSql = str_replace("SELECT *", "SELECT COUNT(*)", $sql);
 $stmt = $conn->prepare($countSql);
 if (!empty($params)) {
@@ -110,7 +103,6 @@ $result = $stmt->get_result();
 $totalBooks = $result->fetch_assoc()['COUNT(*)'];
 $totalPages = ceil($totalBooks / $booksPerPage);
 
-// Get books for current page
 $sql .= " ORDER BY book_name LIMIT ? OFFSET ?";
 $params[] = $booksPerPage;
 $params[] = $offset;
@@ -172,7 +164,7 @@ while ($row = $result->fetch_assoc()) {
     </button>
 </div>
 
-<!-- Table View -->
+
 <div class="books-container books-table" id="tableView">
     <?php if (count($books) > 0): ?>
         <div class="table-container">
@@ -216,7 +208,7 @@ while ($row = $result->fetch_assoc()) {
     <?php endif; ?>
 </div>
 
-<!-- Grid View -->
+
 <div class="books-container books-grid" id="gridView" style="display: none;">
     <?php if (count($books) > 0): ?>
         <div class="books-grid-container">
@@ -247,7 +239,7 @@ while ($row = $result->fetch_assoc()) {
     <?php endif; ?>
 </div>
 
-<!-- Pagination -->
+
 <?php if ($totalPages > 1): ?>
     <div class="pagination-container">
         <?php if ($page > 1): ?>
@@ -297,7 +289,7 @@ while ($row = $result->fetch_assoc()) {
     </div>
 <?php endif; ?>
 
-<!-- Add Book Modal -->
+
 <div class="modal-overlay" id="addBookModal">
     <div class="modal">
         <div class="modal-header">
@@ -366,7 +358,7 @@ while ($row = $result->fetch_assoc()) {
 </div>
 
 <style>
-/* View Options */
+
 .view-options {
     display: flex;
     justify-content: center;
@@ -408,7 +400,7 @@ while ($row = $result->fetch_assoc()) {
     color: var(--white);
 }
 
-/* Table Styles */
+
 .book-name-cell {
     font-weight: 600;
     color: var(--primary-color);
@@ -436,7 +428,7 @@ while ($row = $result->fetch_assoc()) {
     color: #c62828;
 }
 
-/* Grid Styles */
+
 .books-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -507,7 +499,7 @@ while ($row = $result->fetch_assoc()) {
     gap: 5px;
 }
 
-/* Pagination */
+
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -545,7 +537,6 @@ while ($row = $result->fetch_assoc()) {
     pointer-events: none;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .books-grid-container {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -575,7 +566,6 @@ while ($row = $result->fetch_assoc()) {
 </style>
 
 <script>
-// View switching functionality
 document.addEventListener('DOMContentLoaded', function() {
     const viewOptions = document.querySelectorAll('.view-option');
     const tableView = document.getElementById('tableView');
@@ -583,13 +573,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     viewOptions.forEach(option => {
         option.addEventListener('click', function() {
-            // Remove active class from all options
+            
             viewOptions.forEach(opt => opt.classList.remove('active'));
-            
-            // Add active class to clicked option
             this.classList.add('active');
-            
-            // Set view mode
             const viewMode = this.getAttribute('data-view');
             
             if (viewMode === 'books-grid') {
@@ -600,15 +586,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 gridView.style.display = 'none';
             }
             
-            // Save preference in localStorage
+           
             localStorage.setItem('booksViewMode', viewMode);
         });
     });
     
-    // Load saved preference
+    
     const savedViewMode = localStorage.getItem('booksViewMode');
     if (savedViewMode) {
-        // Set active class on the correct button
+        
         viewOptions.forEach(option => {
             if (option.getAttribute('data-view') === savedViewMode) {
                 option.classList.add('active');
@@ -617,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Apply the view mode
+        
         if (savedViewMode === 'books-grid') {
             tableView.style.display = 'none';
             gridView.style.display = 'block';
@@ -630,6 +616,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php
-// Include footer
 include_once '../includes/footer.php';
 ?>
