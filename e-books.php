@@ -1,22 +1,16 @@
 <?php
-// Include header
 include_once '../includes/header.php';
 
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Process e-book operations
 $message = '';
 $messageType = '';
-
-// Upload new e-book
 if (isset($_POST['upload_ebook'])) {
     $title = trim($_POST['title']);
     $author = trim($_POST['author']);
     $category = trim($_POST['category']);
     $description = trim($_POST['description']);
     $type = trim($_POST['type']);
-    // Basic validation
+
     if (empty($title) || empty($author) || empty($type)) {
         $message = "Title ,author and type are required fields.";
         $messageType = "danger";
@@ -24,7 +18,6 @@ if (isset($_POST['upload_ebook'])) {
         $message = "Please select a valid e-book file to upload.";
         $messageType = "danger";
     } else {
-        // Process cover image if uploaded
         $coverImage = "";
         if (isset($_FILES['cover']) && $_FILES['cover']['error'] == 0) {
             $allowed = array('jpg', 'jpeg', 'png', 'gif');
@@ -47,11 +40,9 @@ if (isset($_POST['upload_ebook'])) {
             }
         }
         
-        // Process file upload
         $fileUpload = uploadFile($_FILES['ebook_file'], '../uploads/ebooks/');
         
         if ($fileUpload['success']) {
-            // Insert e-book record
             $stmt = $conn->prepare("
                 INSERT INTO ebooks (title, author, category, description, file_path, file_size, file_type, cover_image, uploaded_by , type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
@@ -80,12 +71,9 @@ if (isset($_POST['upload_ebook'])) {
         }
     }
 }
-
-// Delete e-book
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Get file path and cover image before deleting record
     $stmt = $conn->prepare("SELECT file_path, cover_image FROM ebooks WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -95,18 +83,15 @@ if (isset($_GET['delete'])) {
         $ebook = $result->fetch_assoc();
         $filePath = $ebook['file_path'];
         $coverImage = $ebook['cover_image'];
-        
-        // Delete record from database
         $stmt = $conn->prepare("DELETE FROM ebooks WHERE id = ?");
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
-            // Delete file from server
+            
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
-            
-            // Delete cover image if exists
+        
             if (!empty($coverImage) && file_exists($coverImage)) {
                 unlink($coverImage);
             }
@@ -122,12 +107,9 @@ if (isset($_GET['delete'])) {
         $messageType = "warning";
     }
 }
-
-// Add cover_image column to ebooks table if it doesn't exist
 $sql = "ALTER TABLE ebooks ADD COLUMN IF NOT EXISTS cover_image VARCHAR(255)";
 $conn->query($sql);
 
-// Get all categories for filter
 $categories = [];
 $result = $conn->query("SELECT DISTINCT category FROM ebooks WHERE category != '' ORDER BY category");
 if ($result) {
@@ -136,14 +118,13 @@ if ($result) {
     }
 }
 
-// Handle search and filtering
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 
-// Build the query
 $sql = "SELECT e.*, u.name as uploader_name 
         FROM ebooks e 
-        LEFT JOIN users u ON e.uploaded_by = u.id 
+        LEFT JOIN users u 
+        ON e.uploaded_by = u.id 
         WHERE 1=1";
 $params = [];
 $types = "";
@@ -197,7 +178,7 @@ while ($row = $result->fetch_assoc()) {
             </div>
             
             <?php
-// Categories array set kar lo
+
 $categories = [
     "BS IT-1","BS IT-2","BS IT-3","BS IT-4","BS IT-5","BS IT-6","BS IT-7","BS IT-8",
     "BS ENG-1","BS ENG-2","BS ENG-3","BS ENG-4","BS ENG-5","BS ENG-6","BS ENG-7","BS ENG-8",
@@ -314,7 +295,6 @@ $categories = [
 </div>
 
 
-<!-- Upload E-Book Modal -->
 <div class="modal-overlay" id="uploadEbookModal">
     <div class="modal">
         <div class="modal-header">
@@ -617,6 +597,5 @@ $categories = [
 </style>
 
 <?php
-// Include footer
 include_once '../includes/footer.php';
 ?>
