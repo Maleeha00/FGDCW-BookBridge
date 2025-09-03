@@ -1,19 +1,15 @@
 <?php
 include_once '../includes/config.php';
 include_once '../includes/functions.php';
-
-// Start session if not alredy started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../index.php');
     exit();
 }
 
-// Check if user is student or faculty
 if ($_SESSION['role'] != 'student' && $_SESSION['role'] != 'faculty') {
     header('Location: ../index.php');
     exit();
@@ -23,12 +19,10 @@ $userId = $_SESSION['user_id'];
 $message = '';
 $messageType = '';
 
-// Handle book request submission
 if (isset($_POST['request_book'])) {
     $bookId = (int)$_POST['book_id'];
     $notes = trim($_POST['notes']);
-    
-    // Check if user already has a pending request for this book
+
     $stmt = $conn->prepare("
         SELECT id FROM book_requests 
         WHERE book_id = ? AND user_id = ? AND status = 'pending'
@@ -38,10 +32,10 @@ if (isset($_POST['request_book'])) {
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
-        $message = "You already have a pending request for this book.";
+        $message = "You already have a pending reservation request for this book.";
         $messageType = "warning";
     } else {
-        // Create book request
+        
         $stmt = $conn->prepare("
             INSERT INTO book_requests (book_id, user_id, notes)
             VALUES (?, ?, ?)
@@ -49,7 +43,7 @@ if (isset($_POST['request_book'])) {
         $stmt->bind_param("iis", $bookId, $userId, $notes);
         
         if ($stmt->execute()) {
-            $message = "Book request submitted successfully!";
+            $message = "Book reservation request submitted successfully!";
             $messageType = "success";
         } else {
             $message = "Error submitting request: " . $stmt->error;
@@ -58,7 +52,6 @@ if (isset($_POST['request_book'])) {
     }
 }
 
-// Handle reservation request submission
 if (isset($_POST['request_reservation'])) {
     $bookId = (int)$_POST['book_id'];
     $notes = trim($_POST['notes']);
@@ -68,7 +61,6 @@ if (isset($_POST['request_reservation'])) {
     $messageType = $result['success'] ? 'success' : 'danger';
 }
 
-// Check for pending fines
 $pendingFinesQuery = "
     SELECT SUM(f.amount) as total 
     FROM fines f 
@@ -81,11 +73,9 @@ $stmt->execute();
 $result = $stmt->get_result();
 $pendingFines = $result->fetch_assoc()['total'] ?? 0;
 
-// Handle search and filtering
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 
-// Get all categories
 $categories = [];
 $result = $conn->query("SELECT DISTINCT category FROM books WHERE category != '' ORDER BY category");
 if ($result) {
@@ -94,12 +84,10 @@ if ($result) {
     }
 }
 
-// Pagination settings
 $booksPerPage = 15;
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $booksPerPage;
 
-// Build search query
 $sql = "SELECT * FROM books WHERE 1=1";
 $params = [];
 $types = "";
@@ -119,7 +107,6 @@ if (!empty($category)) {
     $types .= "s";
 }
 
-// Get total count
 $countSql = str_replace("SELECT *", "SELECT COUNT(*)", $sql);
 $stmt = $conn->prepare($countSql);
 if (!empty($params)) {
@@ -130,7 +117,7 @@ $result = $stmt->get_result();
 $totalBooks = $result->fetch_assoc()['COUNT(*)'];
 $totalPages = ceil($totalBooks / $booksPerPage);
 
-// Get books for current page
+
 $sql .= " ORDER BY book_name LIMIT ? OFFSET ?";
 $params[] = $booksPerPage;
 $params[] = $offset;
@@ -153,7 +140,7 @@ while ($row = $result->fetch_assoc()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="icon" type="image/svg+xml" href="../uploads/assests/book.svg">
+    <link rel="icon" type="image/png" href="../uploads/assests/book.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -252,27 +239,26 @@ while ($row = $result->fetch_assoc()) {
 }
 
 .dashboard-btn:hover {
-    background: var(--primary-light); /* Softer hover */
+    background: var(--primary-light); 
 }
 
-/* Logout Button */
+
 .logout-btn {
     border-radius: 25px;
     background: var(--accent-color);
 }
 
 .logout-btn:hover {
-    background: var(--primary-light); /* Soft hover instead of dark */
+    background: var(--primary-light); 
 }
 
-        /* Main Content */
+       
         .books-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
-        /* Header */
         .books-header {
             background: rgba(255, 255, 255, 0.9);
             padding: 30px;
@@ -291,7 +277,6 @@ while ($row = $result->fetch_assoc()) {
             background-clip: text;
         }
 
-        /* Search and Filter Section */
         .search-filter-section {
             background: rgba(255, 255, 255, 0.9);
             padding: 25px;
@@ -369,8 +354,6 @@ while ($row = $result->fetch_assoc()) {
             background: var(--gray-500);
             transform: translateY(-2px);
         }
-
-        /* View Toggle */
         .view-toggle {
             display: flex;
             justify-content: center;
@@ -403,7 +386,6 @@ while ($row = $result->fetch_assoc()) {
             transform: translateY(-2px);
         }
 
-        /* Fine Warning */
         .fine-banner {
             background: linear-gradient(135deg, #ff9800, #f57c00);
             color: white;
@@ -414,7 +396,7 @@ while ($row = $result->fetch_assoc()) {
             box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
         }
 
-        /* Alert Messages */
+    
         .alert {
             padding: 15px 20px;
             margin-bottom: 30px;
@@ -443,7 +425,7 @@ while ($row = $result->fetch_assoc()) {
             border: 1px solid rgba(244, 67, 54, 0.3);
         }
 
-        /* Books Section */
+     
         .books-section {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
@@ -451,7 +433,7 @@ while ($row = $result->fetch_assoc()) {
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* Table View */
+      
         .books-table {
             width: 100%;
             border-collapse: collapse;
@@ -502,7 +484,6 @@ while ($row = $result->fetch_assoc()) {
             color: #c62828;
         }
 
-        /* Grid View */
         .books-grid {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -602,7 +583,6 @@ while ($row = $result->fetch_assoc()) {
             cursor: not-allowed;
         }
 
-        /* Pagination */
         .pagination-container {
             display: flex;
             justify-content: center;
@@ -640,7 +620,6 @@ while ($row = $result->fetch_assoc()) {
             pointer-events: none;
         }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -780,7 +759,7 @@ while ($row = $result->fetch_assoc()) {
             background: var(--primary-dark);
         }
 
-        /* Empty State */
+       
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -798,7 +777,7 @@ while ($row = $result->fetch_assoc()) {
             color: var(--text-color);
         }
 
-        /* Responsive Design */
+       
         @media (max-width: 768px) {
             .navbar-container {
                 flex-direction: column;
@@ -878,7 +857,7 @@ while ($row = $result->fetch_assoc()) {
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
+    
     <nav class="catalog-navbar">
         <div class="navbar-container">
             <a href="catalog.php" class="navbar-brand">
@@ -903,9 +882,9 @@ while ($row = $result->fetch_assoc()) {
         </div>
     </nav>
 
-    <!-- Main Content -->
+    
     <div class="books-container">
-        <!-- Header -->
+        
         <div class="books-header">
             <h1>All Books</h1>
             <p>Explore our complete collection of books</p>
@@ -918,7 +897,6 @@ while ($row = $result->fetch_assoc()) {
             </div>
         <?php endif; ?>
 
-        <!-- Fine Warning Banner -->
         <?php if ($pendingFines > 0): ?>
             <div class="fine-banner">
                 <strong><i class="fas fa-exclamation-triangle"></i> Outstanding Fines:</strong>
@@ -929,7 +907,7 @@ while ($row = $result->fetch_assoc()) {
             </div>
         <?php endif; ?>
 
-        <!-- Search and Filter Section -->
+        
         <div class="search-filter-section">
             <form method="GET" class="search-filter-form">
                 <div class="search-input-group">
@@ -961,7 +939,6 @@ while ($row = $result->fetch_assoc()) {
             </form>
         </div>
 
-        <!-- View Toggle -->
         <div class="view-toggle">
             <button class="view-btn active" onclick="switchView('table')">
                 <i class="fas fa-list"></i> Table View
@@ -971,10 +948,9 @@ while ($row = $result->fetch_assoc()) {
             </button>
         </div>
 
-        <!-- Books Section -->
         <div class="books-section">
             <?php if (count($books) > 0): ?>
-                <!-- Table View -->
+               
                 <table class="books-table" id="tableView">
                     <thead>
                         <tr>
@@ -1006,16 +982,16 @@ while ($row = $result->fetch_assoc()) {
                                 </td>
                                 <td>
                                     <?php if ($pendingFines > 0): ?>
-                                        <button class="action-btn btn-disabled" disabled book_name="Pay pending fines to request books">
-                                            <i class="fas fa-ban"></i> Cannot Request
+                                        <button class="action-btn btn-disabled" disabled book_name="Pay pending fines to reserve books">
+                                            <i class="fas fa-ban"></i> Cannot Reserve
                                         </button>
                                     <?php elseif ($book['available_quantity'] > 0): ?>
                                         <button class="action-btn btn-request" onclick="openRequestModal(<?php echo $book['id']; ?>, '<?php echo addslashes($book['book_name']); ?>', '<?php echo addslashes($book['author']); ?>', '<?php echo addslashes($book['book_no']); ?>', <?php echo $book['available_quantity']; ?>)">
-                                            <i class="fas fa-book"></i> Request
+                                            <i class="fas fa-book"></i> Reserve
                                         </button>
                                     <?php else: ?>
                                         <button class="action-btn btn-reserve" onclick="openReservationModal(<?php echo $book['id']; ?>, '<?php echo addslashes($book['book_name']); ?>', '<?php echo addslashes($book['author']); ?>', '<?php echo addslashes($book['book_no']); ?>')">
-                                            <i class="fas fa-bookmark"></i> Reserve
+                                            <i class="fas fa-bookmark"></i> Request
                                         </button>
                                     <?php endif; ?>
                                 </td>
@@ -1052,15 +1028,15 @@ while ($row = $result->fetch_assoc()) {
                                 <div class="book-actions">
                                     <?php if ($pendingFines > 0): ?>
                                         <button class="action-btn btn-disabled" disabled book_name="Pay pending fines to request books">
-                                            <i class="fas fa-ban"></i> Cannot Request
+                                            <i class="fas fa-ban"></i> Cannot Reserve
                                         </button>
                                     <?php elseif ($book['available_quantity'] > 0): ?>
                                         <button class="action-btn btn-request" onclick="openRequestModal(<?php echo $book['id']; ?>, '<?php echo addslashes($book['book_name']); ?>', '<?php echo addslashes($book['author']); ?>', '<?php echo addslashes($book['book_no']); ?>', <?php echo $book['available_quantity']; ?>)">
-                                            <i class="fas fa-book"></i> Request
+                                            <i class="fas fa-book"></i> Reserve
                                         </button>
                                     <?php else: ?>
                                         <button class="action-btn btn-reserve" onclick="openReservationModal(<?php echo $book['id']; ?>, '<?php echo addslashes($book['book_name']); ?>', '<?php echo addslashes($book['author']); ?>', '<?php echo addslashes($book['book_no']); ?>')">
-                                            <i class="fas fa-bookmark"></i> Reserve
+                                            <i class="fas fa-bookmark"></i> Request
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -1069,7 +1045,6 @@ while ($row = $result->fetch_assoc()) {
                     <?php endforeach; ?>
                 </div>
 
-                <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
                     <div class="pagination-container">
                         <?php if ($page > 1): ?>
@@ -1138,16 +1113,15 @@ while ($row = $result->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- Book Request Modal -->
     <div class="modal-overlay" id="requestModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-book_name">Request Book</h3>
+                <h3 class="modal-book_name">Reserve Book</h3>
                 <button class="modal-close" onclick="closeModal('requestModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="book-request-info" id="requestBookInfo">
-                    <!-- Book info will be populated by JavaScript -->
+                    
                 </div>
                 
                 <form method="POST">
@@ -1169,16 +1143,16 @@ while ($row = $result->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- Reservation Request Modal -->
+   
     <div class="modal-overlay" id="reservationModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-book_name">Reserve Book</h3>
+                <h3 class="modal-book_name">Request Book</h3>
                 <button class="modal-close" onclick="closeModal('reservationModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="book-request-info" id="reservationBookInfo">
-                    <!-- Book info will be populated by JavaScript -->
+                   
                 </div>
                 
                 <div class="alert alert-info" style="margin-bottom: 20px;">
@@ -1206,13 +1180,12 @@ while ($row = $result->fetch_assoc()) {
     </div>
 
     <script>
-        // View switching functionality
+        
         function switchView(viewType) {
             const tableView = document.getElementById('tableView');
             const gridView = document.getElementById('gridView');
             const viewBtns = document.querySelectorAll('.view-btn');
             
-            // Remove active class from all buttons
             viewBtns.forEach(btn => btn.classList.remove('active'));
             
             if (viewType === 'table') {
@@ -1225,11 +1198,10 @@ while ($row = $result->fetch_assoc()) {
                 document.querySelector('.view-btn:last-child').classList.add('active');
             }
             
-            // Save preference
             localStorage.setItem('preferredView', viewType);
         }
 
-        // Load saved view preference
+        
         document.addEventListener('DOMContentLoaded', function() {
             const savedView = localStorage.getItem('preferredView');
             if (savedView === 'grid') {
@@ -1253,7 +1225,7 @@ while ($row = $result->fetch_assoc()) {
             document.getElementById('requestModal').classList.add('active');
         }
 
-        // Open reservation modal
+        
         function openReservationModal(bookId, book_name, author, bookNo) {
             document.getElementById('reservationBookId').value = bookId;
             document.getElementById('reservationBookInfo').innerHTML = `
@@ -1269,19 +1241,18 @@ while ($row = $result->fetch_assoc()) {
             document.getElementById('reservationModal').classList.add('active');
         }
 
-        // Close modal
+        
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Close modal when clicking outside
+        
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal-overlay')) {
                 e.target.classList.remove('active');
             }
         });
 
-        // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal-overlay.active').forEach(modal => {
@@ -1292,4 +1263,3 @@ while ($row = $result->fetch_assoc()) {
     </script>
 </body>
 </html>
-
