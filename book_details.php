@@ -14,7 +14,8 @@ $stmt = $conn->prepare("
            COUNT(DISTINCT ib.id) as times_issued,
            COUNT(DISTINCT CASE WHEN ib.status = 'issued' OR ib.status = 'overdue' THEN ib.id END) as currently_issued
     FROM books b
-    LEFT JOIN issued_books ib ON b.id = ib.book_id
+    LEFT JOIN issued_books ib 
+    ON b.id = ib.book_id
     WHERE b.id = ?
     GROUP BY b.id
 ");
@@ -33,7 +34,8 @@ $book = $result->fetch_assoc();
 $stmt = $conn->prepare("
     SELECT ib.*, u.name as user_name
     FROM issued_books ib
-    JOIN users u ON ib.user_id = u.id
+    JOIN users u 
+    ON ib.user_id = u.id
     WHERE ib.book_id = ?
     ORDER BY ib.issue_date DESC
 ");
