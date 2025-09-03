@@ -1,11 +1,7 @@
 <?php
-// Include header (this should include db.php connection)
 include_once '../includes/header.php';
 
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Initialize variables
 $message = '';
 $clearStatus = false;
 $userData = null;
@@ -13,7 +9,6 @@ $userData = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['check'])) {
     $searchTerm = trim($_POST['student_id']);
 
-    // Search for the user
     $stmt = $conn->prepare("SELECT * FROM users WHERE id = ? OR name LIKE ?");
     $likeTerm = "%$searchTerm%";
     $stmt->bind_param("is", $searchTerm, $likeTerm);
@@ -24,13 +19,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['check'])) {
     if ($userData) {
         $userId = $userData['id'];
 
-        // Check issued books
         $issuedCheck = $conn->prepare("SELECT COUNT(*) AS issued_count FROM issued_books WHERE user_id = ? AND status = 'issued'");
         $issuedCheck->bind_param("i", $userId);
         $issuedCheck->execute();
         $issuedCount = $issuedCheck->get_result()->fetch_assoc()['issued_count'];
 
-        // Check unpaid fines
         $fineCheck = $conn->prepare("SELECT COUNT(*) AS unpaid_count FROM fines WHERE user_id = ? AND status != 'paid'");
         $fineCheck->bind_param("i", $userId);
         $fineCheck->execute();
@@ -39,10 +32,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['check'])) {
         if ($issuedCount == 0 && $unpaidCount == 0) {
             $clearStatus = true;
         } else {
-            $message = "⚠️ Student has pending issues (Issued books or unpaid fines).";
+            $message = " Student has pending issues (Issued books or unpaid fines).";
         }
     } else {
-        $message = "❌ No student found with that ID or Name.";
+        $message = " No student found with that ID or Name.";
     }
 }
 ?>
