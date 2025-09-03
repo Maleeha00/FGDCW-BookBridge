@@ -1,12 +1,9 @@
 <?php
 session_start();
 include 'includes/config.php';
-
 $message = '';
 $messageType = '';
 $generatedId = '';
-
-// Password validation function
 function validatePassword($password) {
     $errors = [];
     if (strlen($password) < 8) {
@@ -20,14 +17,13 @@ function validatePassword($password) {
     }
     return $errors;
 }
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = trim($_POST['name']);//trim agy peechy ki spaces ko remove kr do
+    $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
     $role = $_POST['role'];
-    $department = trim($_POST['department']);
+    $class = trim($_POST['class']);
     $phone = trim($_POST['phone']);
 
     if (empty($name) || empty($email) || empty($password) || empty($role)) {
@@ -57,14 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 $uniqueId = generateUniqueId($conn, $role);
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            
                 
-                // Insert user with pending approval status
-                $stmt = $conn->prepare("INSERT INTO users (unique_id, name, email, password, role, department, phone, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-$stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $department, $phone);
+                $stmt = $conn->prepare("INSERT INTO users (unique_id, name, email, password, role, class, phone, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+                $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $class, $phone);
 
                 if ($stmt->execute()) {
                     $generatedId = $uniqueId;
-                    $message = "Registration submitted successfully! Your unique ID is: <strong>$uniqueId</strong><br><br><strong>Important:</strong> Your account is pending librarian approval. You will receive a notification once approved and can then login using either your email or unique ID.";
+                    $message = "Important:</strong> Your account is pending librarian approval. You will receive an email once approved.";
                     $messageType = "success";
                 } else {
                     $message = "Error registering user: " . $stmt->error;
@@ -75,7 +71,6 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,7 +79,7 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
     <title>Register </title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/auth.css">
-    <link rel="icon" type="image/svg+xml" href="uploads/assests/book.png">
+    <link rel="icon" type="image/png" href="uploads/assests/book.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -106,21 +101,17 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
         </div>
     </div>
 </nav>
-
-
     <div class="auth-page">
         <div class="auth-container large">
             <div class="auth-header">
                 <h1>Register</h1>
             </div>
-
             <div class="auth-body">
                 <?php if (!empty($message)): ?>
                     <div class="alert alert-<?php echo $messageType; ?>">
                         <i class="fas fa-<?php echo $messageType == 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
                         <?php echo $message; ?>
                     </div>
-
                     <?php if ($messageType == 'success' && !empty($generatedId)): ?>
                         <div class="unique-id-display">
                             <h3><i class="fas fa-id-card"></i> Your Unique ID</h3>
@@ -135,7 +126,6 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
-
                 <?php if ($messageType != 'success'): ?>
                 <form method="POST" action="" id="registerForm">
                     <div class="form-row">
@@ -154,7 +144,6 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="role">Role </label>
                         <select id="role" name="role" required>
@@ -167,7 +156,7 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
                         <div class="form-col">
                             <div class="form-group">
                                 <label for="class">Class</label>
-                                <select id="class" name="department" required>
+                                <select id="class" name="class" required>
                                     <option value="">Select your class</option>
                                     <option value="BS IT-1">BS IT-1</option>
                                     <option value="BS IT-2">BS IT-2</option>
@@ -211,7 +200,6 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
                             </div>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-col">
                             <div class="form-group">
@@ -248,15 +236,14 @@ $stmt->bind_param("sssssss", $uniqueId, $name, $email, $hashedPassword, $role, $
             </div>
         </div>
     </div>
-
     <script>
-document.getElementById('registerForm').addEventListener('submit', function (e) {
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
     let emailField = document.getElementById('email');
     let emailValue = emailField.value.trim();
     let emailWarning = document.getElementById('emailWarning');
 
     if (!emailValue.endsWith("@gmail.com")) {
-        e.preventDefault(); // Form submit nahi hoga
+        e.preventDefault(); 
         emailWarning.style.display = 'block';
         emailWarning.innerText = "Email must end with @gmail.com";
         emailField.focus();
@@ -264,7 +251,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
         emailWarning.style.display = 'none';
     }
 });
-
         function copyToClipboard() {
             const uniqueId = document.getElementById('uniqueId').textContent;
             navigator.clipboard.writeText(uniqueId).then(function() {
@@ -278,7 +264,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
                 }, 2000);
             });
         }
-
         document.addEventListener('DOMContentLoaded', function () {
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirm_password');
@@ -294,25 +279,7 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     const phoneInput = document.getElementById('phone');
     const roleSelect = document.getElementById('role');
     const classSelect = document.getElementById('class');
-    const uniqueIdInput = document.getElementById('unique_id'); // ✅ Added line
-
-    // ✅ Auto Generate Unique ID Based on Role
-    if (roleSelect) {
-        roleSelect.addEventListener('change', function () {
-            const role = this.value;
-
-            if (!role) {
-                uniqueIdInput.value = '';
-                return;
-            }
-
-            fetch('generate_id.php?role=' + role)
-                .then(response => response.text())
-                .then(data => {
-                    uniqueIdInput.value = data;
-                });
-        });
-    }
+    const uniqueIdInput = document.getElementById('unique_id'); 
 
     if (roleSelect && classSelect) {
         roleSelect.addEventListener('change', function () {
@@ -324,14 +291,12 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             }
         });
     }
-
     const confirmPasswordMsg = document.createElement('small');
     confirmPasswordMsg.style.display = 'block';
     confirmPasswordMsg.style.marginTop = '5px';
     confirmPasswordMsg.style.fontWeight = 'bold';
     confirmPasswordMsg.style.color = '#d9534f';
     confirmPasswordInput.parentNode.appendChild(confirmPasswordMsg);
-
     confirmPasswordInput.addEventListener('input', function () {
         if (confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value.length > 0) {
             confirmPasswordMsg.textContent = ' Password matched';
@@ -341,7 +306,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             confirmPasswordMsg.style.color = 'red';
         }
     });
-
     if (phoneInput) {
         phoneInput.addEventListener('input', function () {
             const original = this.value;
@@ -355,7 +319,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             }
         });
     }
-
     if (nameInput) {
         nameInput.addEventListener('input', function () {
             const original = this.value;
@@ -366,14 +329,12 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             nameWarning.style.display = !regex.test(original) ? 'block' : 'none';
         });
     }
-
     if (emailInput) {
         emailInput.addEventListener('input', function () {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             emailWarning.style.display = !emailPattern.test(this.value) ? 'block' : 'none';
         });
     }
-
     function validatePassword() {
         const password = passwordInput.value;
         let isValid = true;
@@ -388,7 +349,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             lengthReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         if (/[A-Z]/.test(password)) {
             uppercaseReq.classList.add('valid');
             uppercaseReq.classList.remove('invalid');
@@ -399,7 +359,6 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             uppercaseReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         if (/[@#$]/.test(password)) {
             specialReq.classList.add('valid');
             specialReq.classList.remove('invalid');
@@ -410,16 +369,13 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             specialReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         const passwordsMatch = password === confirmPasswordInput.value && password.length > 0;
         submitBtn.disabled = !(isValid && passwordsMatch);
         return isValid;
     }
-
     passwordInput.addEventListener('focus', function () {
         passwordRequirements.classList.add('show');
     });
-
     passwordInput.addEventListener('blur', function () {
         setTimeout(() => {
             if (document.activeElement !== confirmPasswordInput) {
@@ -427,16 +383,13 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             }
         }, 200);
     });
-
     passwordInput.addEventListener('input', function () {
         validatePassword();
         if (this.value.length > 0) {
             passwordRequirements.classList.add('show');
         }
     });
-
     confirmPasswordInput.addEventListener('input', validatePassword);
-
     const form = document.getElementById('registerForm');
     if (form) {
         form.addEventListener('submit', function (e) {
