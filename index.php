@@ -2,7 +2,6 @@
 session_start();
 include 'includes/config.php';
 
-// Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] == 'librarian') {
         header('Location: librarian/dashboard.php');
@@ -11,32 +10,28 @@ if (isset($_SESSION['user_id'])) {
     }
     exit();
 }
-
-// Process login form
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $login_identifier = trim($_POST['login_identifier']); 
     $password = $_POST['password'];
     $ipAddress = getUserIpAddress();
-
     if (empty($login_identifier) || empty($password)) {
         $error = "Please enter both Unique ID and password";
     } else {
-        // Check login attempts
-        $securityCheck = checkLoginAttempts($conn, $login_identifier, $ipAddress);
         
+        $securityCheck = checkLoginAttempts($conn, $login_identifier, $ipAddress);
         if ($securityCheck['blocked']) {
             $error = $securityCheck['message'];
         } else {
-            // Check email or unique ID
+           
             $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? OR unique_id = ?");
             $stmt->bind_param("ss", $login_identifier, $login_identifier);
             $stmt->execute();
             $result = $stmt->get_result();
-
             if ($result->num_rows == 1) {
                 $user = $result->fetch_assoc();
 
-                // Check approval
+
+                
                 if ($user['role'] != 'librarian' && $user['approval_status'] != 'approved') {
                     if ($user['approval_status'] == 'pending') {
                         $error = "Your account is pending approval. Please wait for librarian approval or contact the library.";
@@ -45,12 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                     recordLoginAttempt($conn, $login_identifier, $ipAddress, false);
 
-                // ✅ Check email verification
+                
                 } elseif (!empty($user['email_verification_token'])) {
                     $error = "Your email is not verified. Please check your inbox and verify your email to log in.";
                     recordLoginAttempt($conn, $login_identifier, $ipAddress, false);
 
-                // ✅ Password verification
                 } elseif (password_verify($password, $user['password'])) {
                     recordLoginAttempt($conn, $login_identifier, $ipAddress, true);
 
@@ -95,8 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
-    <!-- Navigation Bar -->
+   
     <nav class="auth-navbar">
         <div class="container">
             <a href="index.php" class="auth-logo">
@@ -124,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             
             <div class="auth-body">
-                <?php if (isset($error)): ?><!--Agar PHP backend se koi error aata hai toh yahan dikhaya jaata hai-->
+                <?php if (isset($error)): ?>
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-circle"></i> 
                         <?php echo $error; ?>
@@ -147,9 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="password" id="password" name="password" 
                                placeholder="Password" required>
                         <i class="fas fa-eye password-toggle" id="toggleIcon" onclick="togglePassword()"></i>
-                        <!--type="password" → Input hidden dots ke form mein dikhata hai.
-
-<i class="fas fa-eye"> → Eye icon jo password ko show/hide karega JavaScript se-->
                         <div class="password-requirements" id="passwordRequirements">
                             <h4>Password Requirements:</h4>
                             <div class="requirement" id="length-req">
@@ -194,7 +184,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script>
-        //Ek custom function jo password field ko show/hide karega.
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
@@ -207,16 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 toggleIcon.className = 'fas fa-eye password-toggle';
             }
         }
-//DOMContentLoaded → Yeh event tab chalta hai jab poora HTML load ho jaata hai, CSS/Images ke bina wait kiye.
         document.addEventListener('DOMContentLoaded', function() {
             const passwordInput = document.getElementById('password');
             const passwordRequirements = document.getElementById('passwordRequirements');
             const lengthReq = document.getElementById('length-req');
             const uppercaseReq = document.getElementById('uppercase-req');
             const specialReq = document.getElementById('special-req');
-//focus → Jab user password box me click kare, requirements box dikhana.
-
-//blur → Jab user password box se bahar aaye, requirements box ko hide karna (200ms delay ke saath).
             passwordInput.addEventListener('focus', function() {
                 passwordRequirements.style.display = 'block';
             });
@@ -230,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             passwordInput.addEventListener('input', function() {
                 const password = this.value;
                 
-                // Check length
+            
                 if (password.length >= 8) {
                     lengthReq.classList.add('valid');
                     lengthReq.classList.remove('invalid');
@@ -241,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     lengthReq.querySelector('i').className = 'fas fa-times';
                 }
 
-                // Check uppercase
+                
                 if (/[A-Z]/.test(password)) {
                     uppercaseReq.classList.add('valid');
                     uppercaseReq.classList.remove('invalid');
@@ -252,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     uppercaseReq.querySelector('i').className = 'fas fa-times';
                 }
 
-                // Check special characters
+               
                 if (/[@#$]/.test(password)) {
                     specialReq.classList.add('valid');
                     specialReq.classList.remove('invalid');
@@ -264,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             });
 
-            // Check for security warning in error message and start countdown
+            
             const errorAlert = document.querySelector('.alert-danger');
             if (errorAlert && errorAlert.textContent.includes('Please wait')) {
                 const match = errorAlert.textContent.match(/(\d+) seconds/);
@@ -272,12 +257,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     let remainingTime = parseInt(match[1]);
                     const loginButton = document.getElementById('loginButton');
                     
-                    // Disable login button
+                   
                     loginButton.disabled = true;
                     loginButton.style.background = 'var(--gray-400)';
                     loginButton.style.cursor = 'not-allowed';
                     
-                    // Start countdown
+                   
                     const countdownInterval = setInterval(() => {
                         remainingTime--;
                         
