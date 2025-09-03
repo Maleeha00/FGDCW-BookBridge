@@ -1,19 +1,17 @@
 <?php
-// Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Include database connection and functions
+
 include_once '../includes/config.php';
 include_once '../includes/functions.php';
 
-// PHPMailer import
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require '../vendor/autoload.php';
 
-// Check if user is a librarian
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'librarian') {
     header('Location: ../index.php');
     exit();
@@ -22,7 +20,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'librarian') {
 $message = '';
 $messageType = '';
 
-// Function to send email
+
 function sendAccountEmail($toEmail, $toName, $subject, $bodyHtml) {
     $mail = new PHPMailer(true);
     try {
@@ -31,15 +29,15 @@ function sendAccountEmail($toEmail, $toName, $subject, $bodyHtml) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'iqranoureench@gmail.com';
-        $mail->Password   = 'vezw trnp kiwg cssa'; // App password (not account password)
+        $mail->Password   = 'vezw trnp kiwg cssa'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Recipients
+        
         $mail->setFrom('iqranoureench@gmail.com', 'FGDCW BookBridge System');
         $mail->addAddress($toEmail, $toName);
 
-        // Content
+       
         $mail->isHTML(true);
         $mail->Subject = $subject;
         $mail->Body    = $bodyHtml;
@@ -50,14 +48,14 @@ function sendAccountEmail($toEmail, $toName, $subject, $bodyHtml) {
     }
 }
 
-// Process user approval/rejection
+
 if (isset($_GET['id']) && isset($_GET['action'])) {
     $userId = (int)$_GET['id'];
     $action = $_GET['action'];
 
     if ($action === 'approve') {
         try {
-            // Get user details
+            
             $stmt = $conn->prepare("SELECT * FROM users WHERE id = ? AND approval_status = 'pending'");
             $stmt->bind_param("i", $userId);
             $stmt->execute();
@@ -69,21 +67,21 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
 
             $user = $result->fetch_assoc();
 
-            // Approve user
+           
             $updateStmt = $conn->prepare("UPDATE users SET approval_status = 'approved', approved_at = NOW() WHERE id = ?");
             $updateStmt->bind_param("i", $userId);
 
             if ($updateStmt->execute()) {
-                // Generate email verification token
+                
                 $token = bin2hex(random_bytes(16));
 
-                // Save token in DB
+                
                 $tokenStmt = $conn->prepare("UPDATE users SET email_verification_token = ? WHERE id = ?");
                 $tokenStmt->bind_param("si", $token, $userId);
                 $tokenStmt->execute();
 
-                // Send email verification link
-               $verifyUrl = "http://localhost/maleeha19-08/Fgdcwlast/Fgdcw/librarian/verify_email.php?token=$token";
+                
+               $verifyUrl = "http://localhost/lastedit23/Fgdcwlast/Fgdcw/verify_email.php?token=$token";
 
                 $subject = "Verify Your Email - FGDCW Library";
 
@@ -109,7 +107,7 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
 
     } elseif ($action === 'reject') {
         try {
-            // Get user details
+            
             $stmt = $conn->prepare("SELECT * FROM users WHERE id = ? AND approval_status = 'pending'");
             $stmt->bind_param("i", $userId);
             $stmt->execute();
@@ -121,16 +119,16 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
 
             $user = $result->fetch_assoc();
 
-            // Reject user
+           
             $updateStmt = $conn->prepare("UPDATE users SET approval_status = 'rejected', rejected_at = NOW() WHERE id = ?");
             $updateStmt->bind_param("i", $userId);
 
             if ($updateStmt->execute()) {
-                // Send in-app notification
+                
                 $notificationMsg = "Your account registration has been rejected. Please contact the library for more information.";
                 sendNotification($conn, $userId, $notificationMsg);
 
-                // Send Email
+
                 $subject = "Library Account Rejected";
                 $body = "
                     Dear {$user['name']},<br><br>
@@ -153,7 +151,7 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
     }
 }
 
-// Redirect back to dashboard with message
+
 if (!empty($message)) {
     $_SESSION['dashboard_message'] = $message;
     $_SESSION['dashboard_message_type'] = $messageType;
