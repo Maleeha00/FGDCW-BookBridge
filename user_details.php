@@ -1,14 +1,7 @@
 <?php
-// Include header
 include_once '../includes/header.php';
-
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Get user ID from URL
 $userId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-// Get user details
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
@@ -20,8 +13,6 @@ if ($result->num_rows == 0) {
 }
 
 $user = $result->fetch_assoc();
-
-// Get user's issued books
 $stmt = $conn->prepare("
     SELECT ib.*, b.book_name, b.author
     FROM issued_books ib
@@ -32,8 +23,6 @@ $stmt = $conn->prepare("
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $issuedBooks = $stmt->get_result();
-
-// Get user's fines
 $stmt = $conn->prepare("
     SELECT f.*, b.book_name as book_name
     FROM fines f
@@ -95,8 +84,8 @@ $fines = $stmt->get_result();
                     </div>
                     
                     <div class="info-item">
-                        <label>Department:</label>
-                        <span><?php echo htmlspecialchars($user['department'] ?: 'Not specified'); ?></span>
+                        <label>class:</label>
+                        <span><?php echo htmlspecialchars($user['class'] ?: 'Not specified'); ?></span>
                     </div>
                     
                     <div class="info-item">
@@ -205,6 +194,5 @@ $fines = $stmt->get_result();
 </style>
 
 <?php
-// Include footer
 include_once '../includes/footer.php';
 ?>
