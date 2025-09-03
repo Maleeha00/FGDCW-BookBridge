@@ -1,32 +1,25 @@
-// Dashboard JavaScript file for the FGDCW Bookbridge system.
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle view switching (list/grid)
+    
     const viewOptions = document.querySelectorAll('.view-option');
     const booksContainer = document.querySelector('.books-container');
     
     if (viewOptions.length > 0 && booksContainer) {
         viewOptions.forEach(option => {
             option.addEventListener('click', function() {
-                // Remove active class from all options
                 viewOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Add active class to clicked option
                 this.classList.add('active');
-                
-                // Set view mode
                 const viewMode = this.getAttribute('data-view');
                 booksContainer.className = 'books-container ' + viewMode;
                 
-                // Save preference in localStorage
                 localStorage.setItem('booksViewMode', viewMode);
             });
         });
         
-        // Load saved preference
+       
         const savedViewMode = localStorage.getItem('booksViewMode');
         if (savedViewMode) {
-            // Set active class on the correct button
+            
             viewOptions.forEach(option => {
                 if (option.getAttribute('data-view') === savedViewMode) {
                     option.classList.add('active');
@@ -35,17 +28,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Apply the view mode
+            
             booksContainer.className = 'books-container ' + savedViewMode;
         }
     }
     
-    // Modal functionality
+    
     const modalTriggers = document.querySelectorAll('[data-modal-target]');
     const modalCloseButtons = document.querySelectorAll('.modal-close, .modal-cancel');
     const modalOverlays = document.querySelectorAll('.modal-overlay');
     
-    // Open modal
+    
     if (modalTriggers.length > 0) {
         modalTriggers.forEach(trigger => {
             trigger.addEventListener('click', function(e) {
@@ -54,9 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const modal = document.getElementById(modalId);
                 if (modal) {
                     modal.classList.add('active');
-                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                    document.body.style.overflow = 'hidden'; 
                     
-                    // Focus on first input in modal
+                   
                     const firstInput = modal.querySelector('input, textarea, select');
                     if (firstInput) {
                         setTimeout(() => firstInput.focus(), 100);
@@ -66,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Close modal with close button
+   
     if (modalCloseButtons.length > 0) {
         modalCloseButtons.forEach(button => {
             button.addEventListener('click', function(e) {
@@ -74,36 +67,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 const modal = this.closest('.modal-overlay');
                 if (modal) {
                     modal.classList.remove('active');
-                    document.body.style.overflow = ''; // Re-enable scrolling
+                    document.body.style.overflow = ''; 
                 }
             });
         });
     }
-    
-    // Close modal when clicking overlay
     if (modalOverlays.length > 0) {
         modalOverlays.forEach(overlay => {
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.remove('active');
-                    document.body.style.overflow = ''; // Re-enable scrolling
+                    document.body.style.overflow = ''; 
                 }
             });
         });
     }
     
-    // Close modal with ESC key
+    
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const activeModal = document.querySelector('.modal-overlay.active');
             if (activeModal) {
                 activeModal.classList.remove('active');
-                document.body.style.overflow = ''; // Re-enable scrolling
+                document.body.style.overflow = ''; 
             }
         }
     });
     
-    // Book search functionality
+    
     const searchInput = document.getElementById('book-search');
     const bookItems = document.querySelectorAll('.book-card, .book-item');
     
@@ -112,14 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const query = this.value.toLowerCase().trim();
             
             if (query === '') {
-                // Show all books if search is cleared
+                
                 bookItems.forEach(item => {
                     item.style.display = '';
                 });
                 return;
             }
             
-            // Filter books based on search query
+            
             bookItems.forEach(item => {
                 const title = item.querySelector('.book-title').textContent.toLowerCase();
                 const author = item.querySelector('.book-author').textContent.toLowerCase();
@@ -133,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form file input with preview
+    
     const fileInputs = document.querySelectorAll('.custom-file-input');
     
     if (fileInputs.length > 0) {
@@ -148,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Preview image if this is an image upload
+                
                 const previewContainer = document.querySelector(this.getAttribute('data-preview'));
                 if (previewContainer && this.files.length > 0) {
                     const file = this.files[0];
@@ -166,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Handle book filter
+    
     const filterSelect = document.getElementById('book-filter');
     
     if (filterSelect && bookItems.length > 0) {
@@ -174,14 +165,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const filterValue = this.value;
             
             if (filterValue === 'all') {
-                // Show all books
+                
                 bookItems.forEach(item => {
                     item.style.display = '';
                 });
                 return;
             }
             
-            // Filter books based on selected category
+            
             bookItems.forEach(item => {
                 const category = item.getAttribute('data-category').toLowerCase();
                 
@@ -194,18 +185,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Mark notification as read
     const notificationItems = document.querySelectorAll('.notification-item');
     
     if (notificationItems.length > 0) {
         notificationItems.forEach(item => {
             item.addEventListener('click', function() {
-                // Check if already marked as read
+                
                 if (!this.classList.contains('unread')) return;
                 
                 const notificationId = this.getAttribute('data-id');
                 
-                // Send AJAX request to mark as read
+                
                 fetch('mark_notification_read.php', {
                     method: 'POST',
                     headers: {
@@ -216,10 +206,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update UI
+                        
                         this.classList.remove('unread');
                         
-                        // Update notification count
+                        
                         const countEl = document.querySelector('.notification-count');
                         if (countEl) {
                             let count = parseInt(countEl.textContent) - 1;
@@ -238,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Dynamic tabs for detailed views
+    
     const tabLinks = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
     
@@ -247,14 +237,14 @@ document.addEventListener('DOMContentLoaded', function() {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Remove active class from all links and content
+                
                 tabLinks.forEach(l => l.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
                 
-                // Add active class to clicked link
+                
                 this.classList.add('active');
                 
-                // Show corresponding content
+                
                 const target = this.getAttribute('data-tab');
                 const content = document.getElementById(target);
                 if (content) {
@@ -264,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Smooth scrolling for anchor links
+    
     const anchorLinks = document.querySelectorAll('a[href^="#"]');
     anchorLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -279,8 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // Auto-hide alerts after 5 seconds
     const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -291,8 +279,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         }, 5000);
     });
-
-    // Enhanced notification dropdown behavior
     const notificationDropdown = document.querySelector('.notification-dropdown');
     const notificationMenu = document.querySelector('.notification-menu');
     
@@ -322,12 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Dynamic data loading for dashboards
 function loadDashboardData() {
     fetch('get_dashboard_data.php')
         .then(response => response.json())
         .then(data => {
-            // Update stats
+           
             if (data.stats) {
                 Object.keys(data.stats).forEach(key => {
                     const element = document.getElementById(`stat-${key}`);
@@ -337,7 +322,7 @@ function loadDashboardData() {
                 });
             }
             
-            // Update recent activity
+            
             if (data.activity && data.activity.length > 0) {
                 const activityList = document.querySelector('.activity-list');
                 if (activityList) {
@@ -370,7 +355,6 @@ function loadDashboardData() {
         });
 }
 
-// Get appropriate icon for activity type
 function getActivityIcon(type) {
     switch (type) {
         case 'book_added':
@@ -388,11 +372,11 @@ function getActivityIcon(type) {
     }
 }
 
-// Format time ago for activity feed
+
 function formatTimeAgo(timestamp) {
     const now = new Date();
     const time = new Date(timestamp);
-    const diff = Math.floor((now - time) / 1000); // seconds
+    const diff = Math.floor((now - time) / 1000); 
     
     if (diff < 60) {
         return 'just now';
@@ -412,21 +396,17 @@ function formatTimeAgo(timestamp) {
     }
 }
 
-// Utility function to show loading state
 function showLoading(element) {
     if (element) {
         element.innerHTML = '<div class="loader"></div>';
     }
 }
-
-// Utility function to hide loading state
 function hideLoading(element, originalContent) {
     if (element) {
         element.innerHTML = originalContent;
     }
 }
 
-// Enhanced form validation
 function validateForm(form) {
     const requiredFields = form.querySelectorAll('[required]');
     let isValid = true;
@@ -456,14 +436,12 @@ function validateForm(form) {
     return isValid;
 }
 
-// Auto-save form data to localStorage
 function autoSaveForm(formId) {
     const form = document.getElementById(formId);
     if (!form) return;
     
     const inputs = form.querySelectorAll('input, textarea, select');
     
-    // Load saved data
     inputs.forEach(input => {
         const savedValue = localStorage.getItem(`${formId}_${input.name}`);
         if (savedValue && input.type !== 'password') {
@@ -471,7 +449,6 @@ function autoSaveForm(formId) {
         }
     });
     
-    // Save data on input
     inputs.forEach(input => {
         input.addEventListener('input', function() {
             if (this.type !== 'password') {
@@ -479,8 +456,6 @@ function autoSaveForm(formId) {
             }
         });
     });
-    
-    // Clear saved data on form submit
     form.addEventListener('submit', function() {
         inputs.forEach(input => {
             localStorage.removeItem(`${formId}_${input.name}`);
