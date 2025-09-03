@@ -101,11 +101,9 @@
     <div class="rule-item"><i class="fas fa-id-card"></i>
       <div class="rule-text">Members must carry their library card at all times while inside.</div>
     </div>
-
     <div  class="back-btn">
       <a href="about.php" class="back-link"> Back to About</a>
     </div>
   </div>
-
 </body>
 </html>
