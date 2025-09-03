@@ -1,11 +1,6 @@
 <?php
-// Include header
 include_once '../includes/header.php';
-
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Process weed-off operations
 $message = '';
 $messageType = '';
 
@@ -20,7 +15,6 @@ if (isset($_POST['weed_off_book'])) {
         $conn->begin_transaction();
 
         try {
-            // Check if book is currently issued
             $stmt = $conn->prepare("SELECT COUNT(*) as count FROM issued_books WHERE book_id = ? AND (status = 'issued' OR status = 'overdue')");
             $stmt->bind_param("i", $bookId);
             $stmt->execute();
@@ -31,7 +25,6 @@ if (isset($_POST['weed_off_book'])) {
                 throw new Exception("Cannot remove this book. It is currently issued to users.");
             }
 
-            // Get book details before deletion (using book_name from books table)
             $stmt = $conn->prepare("SELECT book_name, author FROM books WHERE id = ?");
             $stmt->bind_param("i", $bookId);
             $stmt->execute();
@@ -41,12 +34,11 @@ if (isset($_POST['weed_off_book'])) {
                 throw new Exception("Book not found.");
             }
 
-            // Insert into weed-off history (using book_title as column name)
             $stmt = $conn->prepare("INSERT INTO weed_off_books (book_id, book_title, reason, removed_by) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("issi", $bookId, $book['book_name'], $reason, $_SESSION['user_id']);
             $stmt->execute();
 
-            // Delete the book
+            
             $stmt = $conn->prepare("DELETE FROM books WHERE id = ?");
             $stmt->bind_param("i", $bookId);
             $stmt->execute();
@@ -61,8 +53,6 @@ if (isset($_POST['weed_off_book'])) {
         }
     }
 }
-
-// Create weed_off_books table if it doesn't exist
 $conn->query("CREATE TABLE IF NOT EXISTS weed_off_books (
     id INT AUTO_INCREMENT PRIMARY KEY, 
     book_id INT, 
@@ -73,12 +63,13 @@ $conn->query("CREATE TABLE IF NOT EXISTS weed_off_books (
     FOREIGN KEY (removed_by) REFERENCES users(id)
 )");
 
-// Get all books for dropdown (excluding currently issued books)
+
 $books = [];
 $sql = "
     SELECT DISTINCT b.id, b.book_name, b.author, b.book_no, b.category, b.total_quantity
     FROM books b
-    LEFT JOIN issued_books ib ON b.id = ib.book_id AND (ib.status = 'issued' OR ib.status = 'overdue')
+    LEFT JOIN issued_books ib 
+    ON b.id = ib.book_id AND (ib.status = 'issued' OR ib.status = 'overdue')
     WHERE ib.id IS NULL
     ORDER BY b.book_name ASC
 ";
@@ -89,9 +80,12 @@ if ($result) {
     }
 }
 
-// Get weed-off history
 $history = [];
-$sql = "SELECT wh.*, u.name as librarian_name FROM weed_off_books wh JOIN users u ON wh.removed_by = u.id ORDER BY wh.removed_at DESC LIMIT 20";
+$sql = "SELECT wh.*, u.name as librarian_name
+ FROM weed_off_books wh
+  JOIN users u 
+  ON wh.removed_by = u.id 
+  ORDER BY wh.removed_at DESC LIMIT 20";
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -112,10 +106,10 @@ if ($result) {
         </div>
     <?php endif; ?>
 
-    <!-- Simple Weed-Off Form -->
+   
     <div class="weed-off-form-card">
         <form id="weedOffForm" method="POST">
-            <!-- Search and Select Book -->
+            
             <div class="form-group">
                 <label for="bookSearch">
                     <i class="fas fa-search"></i> Search and Select Book to Remove
@@ -149,7 +143,7 @@ if ($result) {
                 <input type="hidden" id="selectedBookId" name="book_id">
             </div>
 
-            <!-- Selected Book Display -->
+            
             <div class="selected-book-display" id="selectedBookDisplay" style="display: none;">
                 <div class="selected-book-info">
                     <h3>Selected Book:</h3>
@@ -166,7 +160,7 @@ if ($result) {
                 </div>
             </div>
 
-            <!-- Reason for Removal -->
+            
             <div class="reason-section" id="reasonSection" style="display: none;">
                 <div class="form-group">
                     <label for="reason">
@@ -188,7 +182,7 @@ if ($result) {
         </form>
     </div>
 
-    <!-- Removal History -->
+    
     <div class="history-section">
         <h2 class="history-title">
             <i class="fas fa-history"></i> Removal History
@@ -555,7 +549,7 @@ if ($result) {
     background: var(--primary-dark);
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
     .weed-off-container {
         padding: 15px;
@@ -609,7 +603,6 @@ if ($result) {
     }
 }
 
-/* Animation for smooth transitions */
 .selected-book-display,
 .reason-section {
     animation: slideDown 0.3s ease-out;
@@ -626,7 +619,6 @@ if ($result) {
     }
 }
 
-/* Alert auto-hide animation */
 .alert {
     animation: fadeIn 0.3s ease-out;
 }
@@ -653,27 +645,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const dropdownItems = document.querySelectorAll('.dropdown-item');
     
     let selectedBook = null;
-
-    // Show dropdown when search input is clicked or focused
     searchInput.addEventListener('focus', function() {
         dropdown.classList.add('show');
-        filterBooks(''); // Show all books initially
+        filterBooks(''); 
     });
-
-    // Hide dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.search-container')) {
             dropdown.classList.remove('show');
         }
     });
-
-    // Filter books as user types
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         filterBooks(searchTerm);
     });
 
-    // Handle book selection
     dropdownItems.forEach(item => {
         item.addEventListener('click', function() {
             selectBook(this);
@@ -707,14 +692,14 @@ document.addEventListener('DOMContentLoaded', function() {
             bookNo: item.dataset.bookNo
         };
 
-        // Update search input
+       
         searchInput.value = selectedBook.book_title;
         selectedBookId.value = selectedBook.id;
 
-        // Hide dropdown
+        
         dropdown.classList.remove('show');
 
-        // Show selected book display
+       
         document.getElementById('selectedBookTitle').textContent = selectedBook.book_title;
         document.getElementById('selectedAuthor').textContent = 'by ' + selectedBook.author;
         
@@ -729,13 +714,11 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedBookDisplay.style.display = 'block';
         reasonSection.style.display = 'block';
 
-        // Focus on reason textarea
         setTimeout(() => {
             document.getElementById('reason').focus();
         }, 300);
     }
 
-    // Form submission with confirmation
     document.getElementById('weedOffForm').addEventListener('submit', function(e) {
         if (!selectedBook) {
             e.preventDefault();
@@ -755,8 +738,6 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
         }
     });
-
-    // Auto-hide success/error messages
     const alertMessage = document.getElementById('alertMessage');
     if (alertMessage) {
         setTimeout(() => {
