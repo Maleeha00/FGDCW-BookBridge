@@ -1,14 +1,10 @@
 <?php
-// Include header
+
 include_once '../includes/header.php';
-
-// Check if user is a librarian
 checkUserRole('librarian');
-
-// Get e-book ID from URL
 $ebookId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Process e-book update
+
 $message = '';
 $messageType = '';
 
@@ -19,13 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $type = trim($_POST['type']);
     $description = trim($_POST['description']);
     
-    // Basic validation
     if (empty($title) || empty($author) || empty($type)) {
         $message = "Title, author, and type are required fields.";
         $messageType = "danger";
     } else {
-        // Handle cover image upload
-        $coverImage = $_POST['current_cover'] ?? ''; // Keep existing cover by default
+      
+        $coverImage = $_POST['current_cover'] ?? ''; 
         
         if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == 0) {
             $allowed = array('jpg', 'jpeg', 'png', 'gif');
@@ -43,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $uploadFile = $uploadDir . $newFilename;
                 
                 if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $uploadFile)) {
-                    // Delete old cover image if it exists
+                    
                     if (!empty($coverImage) && file_exists($coverImage)) {
                         unlink($coverImage);
                     }
@@ -52,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
         
-        // Update e-book record
+     
         $stmt = $conn->prepare("
             UPDATE ebooks 
             SET title = ?, author = ?, category = ?, type = ?, description = ?, cover_image = ?
@@ -71,11 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Get e-book details
+
 $stmt = $conn->prepare("
     SELECT e.*, u.name as uploader_name 
     FROM ebooks e
-    LEFT JOIN users u ON e.uploaded_by = u.id
+    LEFT JOIN users u 
+    ON e.uploaded_by = u.id
     WHERE e.id = ?
 ");
 $stmt->bind_param("i", $ebookId);
@@ -311,6 +307,5 @@ $ebook = $result->fetch_assoc();
 </style>
 
 <?php
-// Include footer
 include_once '../includes/footer.php';
 ?>
