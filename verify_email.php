@@ -1,6 +1,6 @@
-<?php
-include_once '../includes/config.php';
 
+<?php
+include_once 'includes/config.php';
 $message = "";
 $messageClass = "";
 
@@ -15,31 +15,28 @@ if (isset($_GET['token'])) {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         $userId = $user['id'];
-
-        // Mark email as verified
         $update = $conn->prepare("UPDATE users SET email_verified = TRUE, email_verification_token = NULL WHERE id = ?");
         $update->bind_param("i", $userId);
         $update->execute();
 
-        $message = "🎉 Your email has been successfully verified. You can now log in.";
+        $message = "Your email has been successfully verified. You can now log in.";
         $messageClass = "success";
     } else {
-        $message = "❌ Invalid or expired verification link.";
+        $message = "Invalid or expired verification link.";
         $messageClass = "error";
     }
 } else {
-    $message = "⚠️ No token provided.";
+    $message = "No token provided.";
     $messageClass = "warning";
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Verification</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+     <link rel="icon" type="image/png" href="uploads/assests/book.png">
     <style>
         body {
             margin: 0;
@@ -49,80 +46,77 @@ if (isset($_GET['token'])) {
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-            animation: bgMove 10s infinite alternate;
-        }
-
-        @keyframes bgMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 100% 100%; }
+            background: #f5f7fa;
         }
 
         .container {
             background: #fff;
-            padding: 35px 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 350px;
             width: 90%;
-            max-width: 400px;
-            animation: fadeIn 1.2s ease;
         }
 
-        @keyframes fadeIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .icon {
+            width: 70px;
+            height: 70px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+
+        .icon svg {
+            width: 35px;
+            height: 35px;
+            fill: white;
         }
 
         h2 {
-            margin-bottom: 20px;
+            font-size: 22px;
+            margin: 10px 0;
             color: #333;
-            font-weight: 600;
         }
 
-        .message {
-            padding: 15px;
-            border-radius: 8px;
+        p {
+            font-size: 14px;
+            color: #555;
             margin-bottom: 20px;
-            font-size: 15px;
-            font-weight: 500;
-            animation: pop 0.5s ease;
         }
 
-        @keyframes pop {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .warning { background: #fff3cd; color: #856404; }
-
-        a {
+        .btn {
             display: inline-block;
-            margin-top: 10px;
             text-decoration: none;
             padding: 10px 20px;
             background: #007bff;
             color: #fff;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 6px;
+            font-size: 14px;
             transition: 0.3s;
         }
 
-        a:hover {
+        .btn:hover {
             background: #0056b3;
-            transform: translateY(-2px);
         }
+
+        .error { color: #e74c3c; }
+        .warning { color: #f39c12; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Email Verification</h2>
-        <div class="message <?php echo $messageClass; ?>">
-            <?php echo $message; ?>
+        <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M20.285 6.709l-11.285 11.285-5.285-5.285 1.414-1.414 3.871 3.871 9.871-9.871z"/>
+            </svg>
         </div>
-        <a href="../index.php">Go to Login</a>
+        <h2>Email Verification</h2>
+        <p class="<?php echo $messageClass; ?>"><?php echo $message; ?></p>
+        <a href="index.php" class="btn">Go to Login</a>
     </div>
 </body>
 </html>
