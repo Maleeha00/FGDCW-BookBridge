@@ -1,18 +1,15 @@
 <?php
 include_once '../includes/header.php';
 
-// Check if user is student or faculty
 if ($_SESSION['role'] != 'student' && $_SESSION['role'] != 'faculty') {
     header('Location: ../index.php');
     exit();
 }
 
-// Handle search and filtering
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $type = isset($_GET['type']) ? trim($_GET['type']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 
-// Get all categories
 $categories = [];
 $result = $conn->query("SELECT DISTINCT type FROM ebooks WHERE type != '' ORDER BY type");
 if ($result) {
@@ -21,8 +18,11 @@ if ($result) {
     }
 }
 
-// Build search query
-$sql = "SELECT e.*, u.name as uploader_name FROM ebooks e LEFT JOIN users u ON e.uploaded_by = u.id WHERE 1=1";
+$sql = "SELECT e.*, u.name as uploader_name
+ FROM ebooks e 
+ LEFT JOIN users u
+  ON e.uploaded_by = u.id 
+  WHERE 1=1";
 $params = [];
 $types = "";
 
@@ -48,7 +48,6 @@ if (!empty($category)) {
 
 $sql .= " ORDER BY e.created_at DESC";
 
-// Execute search
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -227,7 +226,7 @@ while ($row = $result->fetch_assoc()) {
                         <a href="<?php echo htmlspecialchars($ebook['file_path']); ?>" class="btn btn-primary" download>
                             <i class="fas fa-download"></i> Download
                         </a>
-                        <!-- View button class changed from btn-info to btn-primary for same styling -->
+                        
                         <a href="<?php echo htmlspecialchars($ebook['file_path']); ?>" class="btn btn-primary" target="_blank">
                             <i class="fas fa-eye"></i> View
                         </a>
@@ -258,7 +257,7 @@ while ($row = $result->fetch_assoc()) {
     <?php endif; ?>
 </div>
 
-<!-- E-book Details Modal -->
+
 <div class="modal-overlay" id="ebookModal">
     <div class="modal ebook-modal">
         <div class="modal-header">
@@ -266,7 +265,7 @@ while ($row = $result->fetch_assoc()) {
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body" id="modalContent">
-            <!-- Content will be loaded here -->
+            
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary modal-close">Close</button>
@@ -501,20 +500,20 @@ while ($row = $result->fetch_assoc()) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 5px; /* Added gap between buttons */
+    gap: 5px; 
 }
 
 .ebook-actions .btn {
     font-weight: 600;
     border-radius: 6px;
     transition: var(--transition);
-    padding: 8px 12px; /* Adjusted padding for smaller buttons */
-    font-size: 0.8em; /* Adjusted font size */
-    flex: 1; /* Make buttons take equal space */
+    padding: 8px 12px;  b
+    font-size: 0.8em; 
+    flex: 1; 
     text-align: center;
 }
 
-/* UPDATED CSS RULE */
+
 .ebook-actions .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     border: none;
@@ -593,7 +592,7 @@ while ($row = $result->fetch_assoc()) {
     }
     .ebook-actions {
         padding: 15px 20px;
-        flex-direction: row; /* Keep actions in a row */
+        flex-direction: row; 
     }
     .ebook-actions .btn {
         width: auto;
@@ -609,17 +608,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalDownloadBtn = document.getElementById('modalDownloadBtn');
     const modalCloseButtons = document.querySelectorAll('.modal-close');
     const modalOverlay = document.querySelector('.modal-overlay');
-    // E-books data for modal
+    
     const ebooks = <?php echo json_encode($ebooks); ?>;
 
-    // Open modal when details button is clicked
     detailsButtons.forEach(button => {
         button.addEventListener('click', function() {
             const ebookId = parseInt(this.getAttribute('data-ebook-id'));
             const ebook = ebooks.find(e => e.id == ebookId);
 
             if (ebook) {
-                // Populate modal content
+               
                 const fileType = ebook.file_type.toLowerCase();
                 let iconClass = 'fas fa-file-alt';
                 let iconColor = '#6c757d';
@@ -693,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Close modal
+   
     function closeModal() {
         modal.classList.remove('active');
         document.body.style.overflow = '';
@@ -703,14 +701,11 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', closeModal);
     });
 
-    // Close modal when clicking overlay
     modalOverlay.addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
         }
     });
-
-    // Close modal with ESC key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeModal();
