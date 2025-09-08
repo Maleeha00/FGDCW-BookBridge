@@ -38,8 +38,8 @@ function getTotalUsers($conn) {
 function getPendingRequests($conn) { 
     $sql = "
         SELECT 
-            (SELECT COUNT(*) FROM book_requests WHERE status = 'pending') +
-            (SELECT COUNT(*) FROM reservation_requests WHERE status = 'pending') as total
+            (SELECT COUNT(*) FROM reservation_requests WHERE status = 'pending') +
+            (SELECT COUNT(*) FROM book_requests WHERE status = 'pending') as total
     ";
     $result = $conn->query($sql);
     $row = $result->fetch_assoc();
@@ -181,7 +181,7 @@ function getBookbook_name($conn, $bookId) {
 function createReservationRequest($conn, $bookId, $userId, $notes = '') {
    
     $stmt = $conn->prepare("
-        SELECT id FROM reservation_requests 
+        SELECT id FROM book_requests 
         WHERE book_id = ? AND user_id = ? AND status = 'pending'
     ");
     $stmt->bind_param("ii", $bookId, $userId);
@@ -194,7 +194,7 @@ function createReservationRequest($conn, $bookId, $userId, $notes = '') {
 
     // Check if user already has an active reservation for this book
     $stmt = $conn->prepare("
-        SELECT id FROM book_reservations 
+        SELECT id FROM fulfilled_requests 
         WHERE book_id = ? AND user_id = ? AND status = 'active'
     ");
     $stmt->bind_param("ii", $bookId, $userId);
@@ -207,7 +207,7 @@ function createReservationRequest($conn, $bookId, $userId, $notes = '') {
     
     // Create reservation request
     $stmt = $conn->prepare("
-        INSERT INTO reservation_requests (book_id, user_id, notes)
+        INSERT INTO book_requests (book_id, user_id, notes)
         VALUES (?, ?, ?)
     ");
     $stmt->bind_param("iis", $bookId, $userId, $notes);
@@ -231,7 +231,7 @@ function approveReservationRequest($conn, $requestId) {
     
     $stmt = $conn->prepare("
         SELECT rr.*, b.book_name, u.name as user_name 
-        FROM reservation_requests rr
+        FROM book_requests rr
         JOIN books b ON rr.book_id = b.id
         JOIN users u ON rr.user_id = u.id
         WHERE rr.id = ? AND rr.status = 'pending'
@@ -251,7 +251,7 @@ function approveReservationRequest($conn, $requestId) {
     
     try {
         
-        $stmt = $conn->prepare("UPDATE reservation_requests SET status = 'approved' WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE book_requests SET status = 'approved' WHERE id = ?");
         $stmt->bind_param("i", $requestId);
         $stmt->execute();
         
@@ -283,7 +283,7 @@ function rejectReservationRequest($conn, $requestId) {
     
     $stmt = $conn->prepare("
         SELECT rr.*, b.book_name, u.name as user_name 
-        FROM reservation_requests rr
+        FROM book_requests rr
         JOIN books b ON rr.book_id = b.id
         JOIN users u ON rr.user_id = u.id
         WHERE rr.id = ? AND rr.status = 'pending'
@@ -299,7 +299,7 @@ function rejectReservationRequest($conn, $requestId) {
     $request = $result->fetch_assoc();
     
     
-    $stmt = $conn->prepare("UPDATE reservation_requests SET status = 'rejected' WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE book_requests SET status = 'rejected' WHERE id = ?");
     $stmt->bind_param("i", $requestId);
     
     if ($stmt->execute()) {
@@ -322,7 +322,7 @@ function rejectReservationRequest($conn, $requestId) {
 function createBookReservation($conn, $bookId, $userId, $notes = '') {
     
     $stmt = $conn->prepare("
-        SELECT id FROM book_reservations 
+        SELECT id FROM fulfilled_requests 
         WHERE book_id = ? AND user_id = ? AND status = 'active'
     ");
     $stmt->bind_param("ii", $bookId, $userId);
@@ -336,7 +336,7 @@ function createBookReservation($conn, $bookId, $userId, $notes = '') {
     
     $stmt = $conn->prepare("
         SELECT COALESCE(MAX(priority_number), 0) + 1 as next_priority 
-        FROM book_reservations 
+        FROM fulfilled_requests 
         WHERE book_id = ? AND status = 'active'
     ");
     $stmt->bind_param("i", $bookId);
@@ -350,7 +350,7 @@ function createBookReservation($conn, $bookId, $userId, $notes = '') {
     
     
     $stmt = $conn->prepare("
-        INSERT INTO book_reservations (book_id, user_id, priority_number, expires_at, notes)
+        INSERT INTO fulfilled_requests (book_id, user_id, priority_number, expires_at, notes)
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iiiss", $bookId, $userId, $priorityNumber, $expiresAt, $notes);
@@ -369,7 +369,7 @@ function createBookReservation($conn, $bookId, $userId, $notes = '') {
 
 function cancelBookReservation($conn, $reservationId, $userId) {
     $stmt = $conn->prepare("
-        UPDATE book_reservations 
+        UPDATE fulfilled_requests 
         SET status = 'cancelled' 
         WHERE id = ? AND user_id = ? AND status = 'active'
     ");
@@ -389,7 +389,7 @@ function reorderReservationPriorities($conn, $cancelledReservationId) {
     
     $stmt = $conn->prepare("
         SELECT book_id, priority_number 
-        FROM book_reservations 
+        FROM fulfilled_requests 
         WHERE id = ?
     ");
     $stmt->bind_param("i", $cancelledReservationId);
@@ -401,7 +401,7 @@ function reorderReservationPriorities($conn, $cancelledReservationId) {
         
         
         $stmt = $conn->prepare("
-            UPDATE book_reservations 
+            UPDATE fulfilled_requests 
             SET priority_number = priority_number - 1 
             WHERE book_id = ? AND priority_number > ? AND status = 'active'
         ");
@@ -414,7 +414,7 @@ function processBookReservations($conn, $bookId) {
     
     $stmt = $conn->prepare("
         SELECT r.*, u.name as user_name, u.email as user_email, b.book_name as book_book_name
-        FROM book_reservations r
+        FROM fulfilled_requests r
         JOIN users u ON r.user_id = u.id
         JOIN books b ON r.book_id = b.id
         WHERE r.book_id = ? AND r.status = 'active'
@@ -434,7 +434,7 @@ function processBookReservations($conn, $bookId) {
         try {
             
             $stmt = $conn->prepare("
-                UPDATE book_reservations 
+                UPDATE fulfilled_requests 
                 SET status = 'fulfilled', notified_at = NOW() 
                 WHERE id = ?
             ");
@@ -475,7 +475,7 @@ function processBookReservations($conn, $bookId) {
             
             
             $stmt = $conn->prepare("
-                UPDATE book_reservations 
+                UPDATE fulfilled_requests 
                 SET status = 'fulfilled', notified_at = NOW() 
                 WHERE id = ?
             ");
@@ -502,7 +502,7 @@ function processBookReservations($conn, $bookId) {
 function getUserReservations($conn, $userId) {
     $stmt = $conn->prepare("
         SELECT r.*, b.book_name, b.author, b.available_quantity
-        FROM book_reservations r
+        FROM fulfilled_requests r
         JOIN books b ON r.book_id = b.id
         WHERE r.user_id = ?
         ORDER BY r.status ASC, r.priority_number ASC
@@ -523,7 +523,7 @@ function getUserReservations($conn, $userId) {
 function getBookReservationQueue($conn, $bookId) {
     $stmt = $conn->prepare("
         SELECT r.*, u.name as user_name, u.email as user_email
-        FROM book_reservations r
+        FROM fulfilled_requests r
         JOIN users u ON r.user_id = u.id
         WHERE r.book_id = ? AND r.status = 'active'
         ORDER BY r.priority_number ASC
@@ -545,7 +545,7 @@ function cleanExpiredReservations($conn) {
     
     $stmt = $conn->prepare("
         SELECT id, book_id, user_id, priority_number
-        FROM book_reservations 
+        FROM fulfilled_requests 
         WHERE status = 'active' AND expires_at < NOW()
     ");
     $stmt->execute();
@@ -559,7 +559,7 @@ function cleanExpiredReservations($conn) {
     
     foreach ($expiredReservations as $reservation) {
         $stmt = $conn->prepare("
-            UPDATE book_reservations 
+            UPDATE fulfilled_requests 
             SET status = 'expired' 
             WHERE id = ?
         ");
@@ -582,7 +582,7 @@ function autoProcessReservationsOnAvailability($conn, $bookId) {
    
     $stmt = $conn->prepare("
         SELECT COUNT(*) as reservation_count 
-        FROM book_reservations 
+        FROM fulfilled_requests 
         WHERE book_id = ? AND status = 'active'
     ");
     $stmt->bind_param("i", $bookId);

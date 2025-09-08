@@ -15,8 +15,6 @@ if (isset($_GET['token'])) {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         $userId = $user['id'];
-
-        
         $update = $conn->prepare("UPDATE users SET email_verified = TRUE, email_verification_token = NULL WHERE id = ?");
         $update->bind_param("i", $userId);
         $update->execute();

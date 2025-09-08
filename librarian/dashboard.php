@@ -10,7 +10,7 @@ autoExpireBookRequests($conn);
 $autoProcessSql = "
     SELECT DISTINCT b.id as book_id
     FROM books b
-    INNER JOIN book_reservations br 
+    INNER JOIN fulfilled_requests br 
     ON b.id = br.book_id
     WHERE b.available_quantity > 0 
     AND br.status = 'active'
@@ -117,7 +117,7 @@ $pendingReservationRequests = [];
 
 $sql = "
     SELECT br.id, b.book_name, u.name as user_name, br.request_date, 'book' as request_type
-    FROM book_requests br
+    FROM reservation_requests br
     JOIN books b ON br.book_id = b.id
     JOIN users u ON br.user_id = u.id
     WHERE br.status = 'pending'
@@ -132,7 +132,7 @@ if ($result) {
 }
 $sql = "
     SELECT rr.id, b.book_name, u.name as user_name, rr.request_date, 'reservation' as request_type
-    FROM reservation_requests rr
+    FROM book_requests rr
     JOIN books b ON rr.book_id = b.id
     JOIN users u ON rr.user_id = u.id
     WHERE rr.status = 'pending'
@@ -155,7 +155,7 @@ $allPendingRequests = array_slice($allPendingRequests, 0, 5);
 $activeReservations = [];
 $sql = "
     SELECT br.id, b.book_name, u.name as user_name, br.priority_number, br.reservation_date
-    FROM book_reservations br
+    FROM fulfilled_requests br
     JOIN books b ON br.book_id = b.id
     JOIN users u ON br.user_id = u.id
     WHERE br.status = 'active'

@@ -16,13 +16,13 @@ if (isset($_POST['cancel_request'])) {
     $requestId = (int)$_POST['request_id'];
     
     // Verify the request belongs to the current user
-    $stmt = $conn->prepare("SELECT id FROM book_requests WHERE id = ? AND user_id = ? AND status = 'pending'");
+    $stmt = $conn->prepare("SELECT id FROM reservation_requests WHERE id = ? AND user_id = ? AND status = 'pending'");
     $stmt->bind_param("ii", $requestId, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
-        $stmt = $conn->prepare("UPDATE book_requests SET status = 'cancelled' WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE reservation_requests SET status = 'cancelled' WHERE id = ?");
         $stmt->bind_param("i", $requestId);
         
         if ($stmt->execute()) {
@@ -43,13 +43,13 @@ if (isset($_POST['cancel_reservation_request'])) {
     $requestId = (int)$_POST['request_id'];
     
     // Verify the request belongs to the current user
-    $stmt = $conn->prepare("SELECT id FROM reservation_requests WHERE id = ? AND user_id = ? AND status = 'pending'");
+    $stmt = $conn->prepare("SELECT id FROM book_requests WHERE id = ? AND user_id = ? AND status = 'pending'");
     $stmt->bind_param("ii", $requestId, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
-        $stmt = $conn->prepare("UPDATE reservation_requests SET status = 'cancelled' WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE book_requests SET status = 'cancelled' WHERE id = ?");
         $stmt->bind_param("i", $requestId);
         
         if ($stmt->execute()) {
@@ -68,7 +68,7 @@ if (isset($_POST['cancel_reservation_request'])) {
 // Get all book requests for the user
 $sql = "
     SELECT br.*, b.book_name, b.author, b.book_no, b.available_quantity, 'book' as request_type, br.collected, br.expires_at, br.approved_at, br.collected_at
-    FROM book_requests br
+    FROM reservation_requests br
     JOIN books b ON br.book_id = b.id
     WHERE br.user_id = ?
     ORDER BY br.request_date DESC
@@ -85,7 +85,7 @@ while ($row = $result->fetch_assoc()) {
 // Get all reservation requests for the user
 $sql = "
     SELECT rr.*, b.book_name, b.author, b.book_no, b.available_quantity, 'reservation' as request_type
-    FROM reservation_requests rr
+    FROM book_requests rr
     JOIN books b ON rr.book_id = b.id
     WHERE rr.user_id = ?
     ORDER BY rr.request_date DESC

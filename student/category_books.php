@@ -37,7 +37,7 @@ if (isset($_POST['request_book'])) {
     
     // Check if user already has a pending request for this book
     $stmt = $conn->prepare("
-        SELECT id FROM book_requests 
+        SELECT id FROM reservation_requests 
         WHERE book_id = ? AND user_id = ? AND status = 'pending'
     ");
     $stmt->bind_param("ii", $bookId, $userId);
@@ -50,7 +50,7 @@ if (isset($_POST['request_book'])) {
     } else {
         // Create book request
         $stmt = $conn->prepare("
-            INSERT INTO book_requests (book_id, user_id, notes)
+            INSERT INTO reservation_requests (book_id, user_id, notes)
             VALUES (?, ?, ?)
         ");
         $stmt->bind_param("iis", $bookId, $userId, $notes);

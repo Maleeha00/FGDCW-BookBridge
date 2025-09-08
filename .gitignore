@@ -1,0 +1,27 @@
+# === Dependencies ===
+/vendor/
+/node_modules/
+
+# === Lock files (auto generated) ===
+composer.lock
+package-lock.json
+
+# === System/OS files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Logs/Cache ===
+*.log
+__pycache__/
+
+# === Sensitive config ===
+.env
+config.php
+
+# === User uploads (avoid heavy/private data) ===
+uploads/
+
+# === IDE/Editor settings ===
+.vscode/
+.idea/

@@ -4,8 +4,6 @@ include 'includes/config.php';
 $message = '';
 $messageType = '';
 $generatedId = '';
-
-
 function validatePassword($password) {
     $errors = [];
     if (strlen($password) < 8) {
@@ -73,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -294,14 +291,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
     }
-
     const confirmPasswordMsg = document.createElement('small');
     confirmPasswordMsg.style.display = 'block';
     confirmPasswordMsg.style.marginTop = '5px';
     confirmPasswordMsg.style.fontWeight = 'bold';
     confirmPasswordMsg.style.color = '#d9534f';
     confirmPasswordInput.parentNode.appendChild(confirmPasswordMsg);
-
     confirmPasswordInput.addEventListener('input', function () {
         if (confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value.length > 0) {
             confirmPasswordMsg.textContent = ' Password matched';
@@ -311,7 +306,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             confirmPasswordMsg.style.color = 'red';
         }
     });
-
     if (phoneInput) {
         phoneInput.addEventListener('input', function () {
             const original = this.value;
@@ -325,7 +319,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
     }
-
     if (nameInput) {
         nameInput.addEventListener('input', function () {
             const original = this.value;
@@ -336,14 +329,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             nameWarning.style.display = !regex.test(original) ? 'block' : 'none';
         });
     }
-
     if (emailInput) {
         emailInput.addEventListener('input', function () {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             emailWarning.style.display = !emailPattern.test(this.value) ? 'block' : 'none';
         });
     }
-
     function validatePassword() {
         const password = passwordInput.value;
         let isValid = true;
@@ -358,7 +349,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             lengthReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         if (/[A-Z]/.test(password)) {
             uppercaseReq.classList.add('valid');
             uppercaseReq.classList.remove('invalid');
@@ -369,7 +359,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             uppercaseReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         if (/[@#$]/.test(password)) {
             specialReq.classList.add('valid');
             specialReq.classList.remove('invalid');
@@ -380,16 +369,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             specialReq.querySelector('i').className = 'fas fa-times';
             isValid = false;
         }
-
         const passwordsMatch = password === confirmPasswordInput.value && password.length > 0;
         submitBtn.disabled = !(isValid && passwordsMatch);
         return isValid;
     }
-
     passwordInput.addEventListener('focus', function () {
         passwordRequirements.classList.add('show');
     });
-
     passwordInput.addEventListener('blur', function () {
         setTimeout(() => {
             if (document.activeElement !== confirmPasswordInput) {
@@ -397,16 +383,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }, 200);
     });
-
     passwordInput.addEventListener('input', function () {
         validatePassword();
         if (this.value.length > 0) {
             passwordRequirements.classList.add('show');
         }
     });
-
     confirmPasswordInput.addEventListener('input', validatePassword);
-
     const form = document.getElementById('registerForm');
     if (form) {
         form.addEventListener('submit', function (e) {

@@ -18,7 +18,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
             try {
                 $stmt = $conn->prepare("
                     SELECT br.*, b.book_name, b.available_quantity, u.id as user_id, u.name as user_name
-                    FROM book_requests br
+                    FROM reservation_requests br
                     JOIN books b ON br.book_id = b.id
                     JOIN users u ON br.user_id = u.id
                     WHERE br.id = ? AND br.status = 'pending'
@@ -32,7 +32,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 $request = $res->fetch_assoc();
                 $countStmt = $conn->prepare("
                     SELECT COUNT(*) AS approved_count
-                    FROM book_requests
+                    FROM reservation_requests
                     WHERE book_id = ? AND status = 'approved' AND collected = 0
                 ");
                 $countStmt->bind_param("i", $request['book_id']);
@@ -43,7 +43,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 if ($approvedCount >= (int)$request['available_quantity']) {
                     throw new Exception('Cannot approve: no available copies left.');
                 }
-                $approveStmt = $conn->prepare("UPDATE book_requests SET status = 'approved', approved_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 DAY) WHERE id = ?");
+                $approveStmt = $conn->prepare("UPDATE reservation_requests SET status = 'approved', approved_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 DAY) WHERE id = ?");
                 $approveStmt->bind_param("i", $id);
                 $approveStmt->execute();
                 $notificationMsg = "Your request for '{$request['book_name']}' has been approved. Please collect it within 2 days.";
@@ -53,14 +53,14 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 $approvedCountAfter = (int)$countRes->fetch_assoc()['approved_count'];
                 if ($approvedCountAfter >= (int)$request['available_quantity']) {
                    
-                    $pendingStmt = $conn->prepare("SELECT id, user_id FROM book_requests WHERE book_id = ? AND status = 'pending'");
+                    $pendingStmt = $conn->prepare("SELECT id, user_id FROM reservation_requests WHERE book_id = ? AND status = 'pending'");
                     $pendingStmt->bind_param("i", $request['book_id']);
                     $pendingStmt->execute();
                     $pendingRes = $pendingStmt->get_result();
                     while ($row = $pendingRes->fetch_assoc()) {
                         $rejId = (int)$row['id'];
                         $rejUserId = (int)$row['user_id'];
-                        $conn->query("UPDATE book_requests SET status = 'rejected' WHERE id = {$rejId}");
+                        $conn->query("UPDATE reservation_requests SET status = 'rejected' WHERE id = {$rejId}");
                         sendNotification($conn, $rejUserId, "Your request for '{$request['book_name']}' was rejected because all available copies have been allocated.");
                     }
                 }
@@ -75,7 +75,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
             try {
                 $stmt = $conn->prepare("
                     SELECT br.*, b.book_name, u.id as user_id
-                    FROM book_requests br
+                    FROM reservation_requests br
                     JOIN books b ON br.book_id = b.id
                     JOIN users u ON br.user_id = u.id
                     WHERE br.id = ? AND br.status = 'pending'
@@ -88,7 +88,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 }
                 $request = $res->fetch_assoc();
 
-                $upd = $conn->prepare("UPDATE book_requests SET status = 'rejected' WHERE id = ?");
+                $upd = $conn->prepare("UPDATE reservation_requests SET status = 'rejected' WHERE id = ?");
                 $upd->bind_param("i", $id);
                 $upd->execute();
 
@@ -106,7 +106,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 
                 $stmt = $conn->prepare("
                     SELECT br.*, b.book_name, b.available_quantity, u.id as user_id
-                    FROM book_requests br
+                    FROM reservation_requests br
                     JOIN books b ON br.book_id = b.id
                     JOIN users u ON br.user_id = u.id
                     WHERE br.id = ? AND br.status = 'approved' AND br.collected = 0
@@ -122,7 +122,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 
                 if (!empty($request['expires_at']) && strtotime($request['expires_at']) < time()) {
                     
-                    $conn->query("UPDATE book_requests SET status = 'expired' WHERE id = " . (int)$request['id']);
+                    $conn->query("UPDATE reservation_requests SET status = 'expired' WHERE id = " . (int)$request['id']);
                     throw new Exception('Request has expired and cannot be collected.');
                 }
 
@@ -140,7 +140,7 @@ if (isset($_GET['id']) && isset($_GET['action']) && isset($_GET['type'])) {
                 $ins->execute();
 
                 updateBookAvailability($conn, (int)$request['book_id'], 'issue');
-                $conn->query("UPDATE book_requests SET collected = 1, collected_at = NOW() WHERE id = " . (int)$request['id']);
+                $conn->query("UPDATE reservation_requests SET collected = 1, collected_at = NOW() WHERE id = " . (int)$request['id']);
 
                 
                 sendNotification($conn, (int)$request['user_id'], "Please collect your approved book '{$request['book_name']}'. It has now been issued to you. Due date: " . date('F j, Y', strtotime($returnDate)) . ".");
@@ -176,7 +176,7 @@ $requestType = isset($_GET['request_type']) ? trim($_GET['request_type']) : '';
 $bookRequests = [];
 $sql = "
     SELECT br.*, b.book_name as book_name, u.name as user_name, 'book' as request_type, br.collected, br.expires_at, b.available_quantity
-    FROM book_requests br
+    FROM reservation_requests br
     JOIN books b ON br.book_id = b.id
     JOIN users u ON br.user_id = u.id
     WHERE 1=1
@@ -212,7 +212,7 @@ while ($row = $result->fetch_assoc()) {
 $reservationRequests = [];
 $sql = "
     SELECT rr.*, b.book_name as book_name, u.name as user_name, 'reservation' as request_type, b.available_quantity
-    FROM reservation_requests rr
+    FROM book_requests rr
     JOIN books b ON rr.book_id = b.id
     JOIN users u ON rr.user_id = u.id
     WHERE 1=1
@@ -338,7 +338,7 @@ usort($allRequests, function($a, $b) {
                                 if ($request['request_type'] == 'book') {
                                     $approvedCountStmt = $conn->prepare("
                                         SELECT COUNT(*) as approved_count 
-                                        FROM book_requests 
+                                        FROM reservation_requests 
                                         WHERE book_id = ? AND status = 'approved' AND collected = 0
                                     ");
                                     $approvedCountStmt->bind_param("i", $request['book_id']);

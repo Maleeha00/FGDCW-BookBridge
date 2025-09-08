@@ -30,7 +30,7 @@ if ($result) {
 $pendingRequests = [];
 $sql = "
     SELECT br.*, b.book_name
-    FROM book_requests br
+    FROM reservation_requests br
     JOIN books b ON br.book_id = b.id
     WHERE br.user_id = ? AND br.status = 'pending'
     ORDER BY br.request_date DESC
@@ -48,7 +48,7 @@ if ($result) {
 $awaitingCollection = [];
 $sql = "
     SELECT br.*, b.book_name
-    FROM book_requests br
+    FROM reservation_requests br
     JOIN books b ON br.book_id = b.id
     WHERE br.user_id = ? AND br.status = 'approved' AND br.collected = 0
     ORDER BY br.approved_at DESC
